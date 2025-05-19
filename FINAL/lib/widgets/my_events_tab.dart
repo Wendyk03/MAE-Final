@@ -8,10 +8,11 @@ class MyEventsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('events')
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('events')
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -21,18 +22,24 @@ class MyEventsTab extends StatelessWidget {
         }
 
         // Map Firestore documents to Event objects
-        final events = snapshot.data!.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return Event(
-            name: data['name'] ?? '',
-            date: data['date'] ?? '',
-            status: data['status'] ?? '',
-          );
-        }).toList();
+        final events =
+            snapshot.data!.docs.map((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return Event(
+                name: data['name'] ?? '',
+                date: data['date'] ?? '',
+                status: data['status'] ?? '',
+              );
+            }).toList();
 
         // Separate events into pending and approved categories
-        final pendingEvents = events.where((e) => e.status == 'PENDING').toList();
-        final approvedEvents = events.where((e) => e.status == 'APPROVED').toList();
+        final pendingEvents =
+            events.where((e) => e.status == 'PENDING').toList();
+        final approvedEvents =
+            events.where((e) => e.status == 'APPROVED').toList();
+        // 先增加 completeEvents
+        final completeEvents =
+            events.where((e) => e.status == 'COMPLETE').toList();
 
         return SingleChildScrollView(
           child: Padding(
@@ -76,6 +83,27 @@ class MyEventsTab extends StatelessWidget {
                   itemCount: approvedEvents.length,
                   itemBuilder: (context, index) {
                     return MyEventCard(event: approvedEvents[index]);
+                  },
+                ),
+
+                const SizedBox(height: 24),
+
+                // Complete Events Section 新增
+                const Text(
+                  'COMPLETED EVENTS',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: completeEvents.length,
+                  itemBuilder: (context, index) {
+                    return MyEventCard(event: completeEvents[index]);
                   },
                 ),
               ],

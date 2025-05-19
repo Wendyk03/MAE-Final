@@ -5,20 +5,13 @@ class Event {
   final String date;
   final String status;
 
-  Event({
-    required this.name,
-    required this.date,
-    required this.status,
-  });
+  Event({required this.name, required this.date, required this.status});
 }
 
 class MyEventCard extends StatelessWidget {
   final Event event;
 
-  const MyEventCard({
-    Key? key,
-    required this.event,
-  }) : super(key: key);
+  const MyEventCard({Key? key, required this.event}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +23,7 @@ class MyEventCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -56,10 +47,7 @@ class MyEventCard extends StatelessWidget {
                   ),
                   Text(
                     dateSub,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                 ],
               ),
@@ -81,9 +69,12 @@ class MyEventCard extends StatelessWidget {
                   Text(
                     event.status,
                     style: TextStyle(
-                      color: event.status == 'APPROVED'
-                          ? Colors.green
-                          : Colors.orange,
+                      color:
+                          event.status == 'APPROVED'
+                              ? Colors.green
+                              : event.status == 'COMPLETE'
+                              ? Colors.grey
+                              : Colors.orange,
                       fontSize: 12,
                     ),
                   ),

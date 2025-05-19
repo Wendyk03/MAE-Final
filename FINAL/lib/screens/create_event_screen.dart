@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'registration_success_screen.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'payment_screen.dart';
+
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({Key? key}) : super(key: key);
@@ -140,61 +142,84 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  Future<void> _submitEvent() async {
-    if (!_formKey.currentState!.validate()) {
-      setState(() {
-        _submitError = 'Please fill all required fields.';
-      });
-      return;
-    }
+Future<void> _submitEvent() async {
+  if (!_formKey.currentState!.validate()) {
     setState(() {
-      _isSubmitting = true;
-      _submitError = null;
+      _submitError = 'Please fill all required fields.';
     });
-    try {
-      String? imageUrl;
-      if (_imageFile != null || _webImageBytes != null) {
-        imageUrl = await _uploadImage();
-        print('DEBUG: Uploaded imageUrl: $imageUrl');
-        if (imageUrl == null || imageUrl.isEmpty) {
-          setState(() {
-            _isSubmitting = false;
-            _submitError = 'Image upload failed. Event not submitted.';
-          });
-          return;
-        }
-      } else {
-        imageUrl = '';
-      }
-      await FirebaseFirestore.instance.collection('events').add({
-        'name': _eventNameController.text,
-        'location': _locationController.text,
-        'date': _dateController.text,
-        'time': _timeController.text,
-        'fee': _feeController.text,
-        'organizer': _organizerController.text,
-        'website': _websiteController.text,
-        'details': _detailsController.text,
-        'status': 'PENDING',
-        'createdAt': FieldValue.serverTimestamp(),
-        'imageUrl': imageUrl,
-      });
-      setState(() {
-        _isSubmitting = false;
-      });
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const RegistrationSuccessScreen(),
-        ),
-      );
-    } catch (e) {
-      setState(() {
-        _isSubmitting = false;
-        _submitError = 'Failed to submit: \n' + e.toString();
-      });
-    }
+    return;
   }
+  setState(() {
+    _isSubmitting = true;
+    _submitError = null;
+  });
+  try {
+    String? imageUrl;
+    if (_imageFile != null || _webImageBytes != null) {
+      imageUrl = await _uploadImage();
+      if (imageUrl == null || imageUrl.isEmpty) {
+        setState(() {
+          _isSubmitting = false;
+          _submitError = 'Image upload failed. Event not submitted.';
+        });
+        return;
+      }
+    } else {
+      imageUrl = '';
+    }
+
+    // Save event to Firestore
+    await FirebaseFirestore.instance.collection('events').add({
+      'name': _eventNameController.text,
+      'location': _locationController.text,
+      'date': _dateController.text,
+      'time': _timeController.text,
+      'fee': _feeController.text,
+      'organizer': _organizerController.text,
+      'website': _websiteController.text,
+      'details': _detailsController.text,
+      'status': 'PENDING',
+      'createdAt': FieldValue.serverTimestamp(),
+      'imageUrl': imageUrl,
+    });
+
+    // Create Event object
+    final event = Event(
+      name: _eventNameController.text,
+      date: _dateController.text,
+      time: _timeController.text,
+      location: _locationController.text,
+      organizer: _organizerController.text,
+      fee: double.tryParse(_feeController.text) ?? 0.0,
+      status: 'PENDING',
+      imageUrl: imageUrl ?? '',
+      details: _detailsController.text,
+    );
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    // Navigate to PaymentScreen passing event data
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(
+          event: event,
+          onPaymentComplete: () {
+            // Optional: refresh or callback after payment done
+          },
+        ),
+      ),
+    );
+  } catch (e) {
+    setState(() {
+      _isSubmitting = false;
+      _submitError = 'Failed to submit: \n' + e.toString();
+    });
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
