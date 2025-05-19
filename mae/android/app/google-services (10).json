@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "960465283252",
+    "project_id": "apu-event-app",
+    "storage_bucket": "apu-event-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:960465283252:android:a467573ad52e3fb0100fe1",
+        "android_client_info": {
+          "package_name": "com.example.mae"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj67_VXqAqr2tdutgVqwYxuB3qLwMR_C4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
