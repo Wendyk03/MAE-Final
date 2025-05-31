@@ -184,37 +184,30 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 200,
-              width: double.infinity,
-              color: Colors.blue.shade400,
-              child:
-                  kIsWeb
-                      ? (_webImageBytes != null
-                          ? Image.memory(_webImageBytes!, fit: BoxFit.cover)
-                          : (event.imageUrl.isNotEmpty
-                              ? Image.network(event.imageUrl, fit: BoxFit.cover)
-                              : _buildUploadPlaceholder(showButton: false)))
-                      : (_imageFile != null
-                          ? Image.file(_imageFile!, fit: BoxFit.cover)
-                          : (event.imageUrl.isNotEmpty
-                              ? Image.network(event.imageUrl, fit: BoxFit.cover)
-                              : _buildUploadPlaceholder(showButton: false))),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  onPressed: _pickImage,
-                  child: const Text('Upload Event Poster'),
-                ),
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 200,
+                width: double.infinity,
+                color: Colors.blue.shade400,
+                child:
+                    kIsWeb
+                        ? (_webImageBytes != null
+                            ? Image.memory(_webImageBytes!, fit: BoxFit.cover)
+                            : (event.imageUrl.isNotEmpty
+                                ? Image.network(
+                                  event.imageUrl,
+                                  fit: BoxFit.cover,
+                                )
+                                : _buildUploadPlaceholder(showButton: false)))
+                        : (_imageFile != null
+                            ? Image.file(_imageFile!, fit: BoxFit.cover)
+                            : (event.imageUrl.isNotEmpty
+                                ? Image.network(
+                                  event.imageUrl,
+                                  fit: BoxFit.cover,
+                                )
+                                : _buildUploadPlaceholder(showButton: false))),
               ),
             ),
             Padding(

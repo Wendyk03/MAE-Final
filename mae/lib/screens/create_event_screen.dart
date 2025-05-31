@@ -275,10 +275,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           child: GestureDetector(
                             onTap: () async {
                               FocusScope.of(context).unfocus();
+                              DateTime today = DateTime.now();
+                              DateTime minDate = today.add(const Duration(days: 7));
                               DateTime? picked = await showDatePicker(
                                 context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2020),
+                                initialDate: minDate,
+                                firstDate: minDate,
                                 lastDate: DateTime(2100),
                               );
                               if (picked != null) {
@@ -492,7 +494,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                  : const Text('Submit'),
+                                  : const Text('Submit', style: TextStyle(color: Colors.white, fontSize: 16)),
                         ),
                       ),
                     ),

@@ -562,7 +562,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade500,
+                                backgroundColor: Colors.red.shade600,
                                 minimumSize: const Size(120, 45),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
@@ -573,7 +573,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.redAccent,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -609,7 +609,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.redAccent,
+                                color: Colors.white,
                               ),
                             ),
                           ),

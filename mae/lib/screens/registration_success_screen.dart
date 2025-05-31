@@ -68,7 +68,7 @@ class RegistrationSuccessScreen extends StatelessWidget {
                       builder: (context) => HomeScreen(
                         toggleTheme: () {},
                         isDarkMode: false,
-                        initialTabIndex: 2, // Registered tab
+                        initialTabIndex: 1, // My Events tab
                       ),
                     ),
                     (route) => false,
