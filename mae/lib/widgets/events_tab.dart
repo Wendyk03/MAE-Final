@@ -17,9 +17,24 @@ class EventsTab extends StatelessWidget {
     }
   }
 
+  Future<void> _checkAndEndPastEvents(List<Event> events) async {
+    final now = DateTime.now();
+    for (final event in events) {
+      final eventDate = _parseDate(event.date);
+      if (eventDate != null &&
+          eventDate.isBefore(now) &&
+          event.status == 'APPROVED') {
+        await FirebaseFirestore.instance
+            .collection('events')
+            .doc(event.id)
+            .update({'status': 'END'});
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final today = DateTime(2025, 5, 18);
+    final today = DateTime.now();
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -71,37 +86,40 @@ class EventsTab extends StatelessWidget {
                 }
 
                 final events =
-                    snapshot.data!.docs
-                        .map((doc) {
-                          final data = doc.data() as Map<String, dynamic>;
-                          return Event(
-                            id: data['id'], // Pass the Firestore 'id' field to the Event model
-                            name: data['name'] ?? '',
-                            organizer: data['organizer'] ?? '',
-                            date: data['date'] ?? '',
-                            time: data['time'] ?? '',
-                            location: data['location'] ?? '',
-                            fee: double.tryParse(data['fee'].toString()) ?? 0.0,
-                            status: data['status'] ?? '',
-                            imageUrl: data['imageUrl'] ?? '',
-                            details: data['details'],
-                            rejectionReason: data['rejectionReason'],
-                          );
-                        })
-                        .where((event) {
-                          if (event.status != 'APPROVED') return false;
-                          final eventDate = _parseDate(event.date);
-                          if (eventDate == null) return false;
-                          final eventDay = DateTime(
-                            eventDate.year,
-                            eventDate.month,
-                            eventDate.day,
-                          );
-                          return eventDay.compareTo(today) >= 0;
-                        })
-                        .toList();
+                    snapshot.data!.docs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return Event(
+                        id: data['id'],
+                        name: data['name'] ?? '',
+                        organizer: data['organizer'] ?? '',
+                        date: data['date'] ?? '',
+                        time: data['time'] ?? '',
+                        location: data['location'] ?? '',
+                        fee: double.tryParse(data['fee'].toString()) ?? 0.0,
+                        status: data['status'] ?? '',
+                        imageUrl: data['imageUrl'] ?? '',
+                        details: data['details'],
+                        rejectionReason: data['rejectionReason'],
+                      );
+                    }).toList();
 
-                if (events.isEmpty) {
+                // Check and update past events to END
+                _checkAndEndPastEvents(events);
+
+                final upcomingEvents =
+                    events.where((event) {
+                      if (event.status != 'APPROVED') return false;
+                      final eventDate = _parseDate(event.date);
+                      if (eventDate == null) return false;
+                      final eventDay = DateTime(
+                        eventDate.year,
+                        eventDate.month,
+                        eventDate.day,
+                      );
+                      return eventDay.compareTo(today) >= 0;
+                    }).toList();
+
+                if (upcomingEvents.isEmpty) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
@@ -113,9 +131,9 @@ class EventsTab extends StatelessWidget {
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: events.length,
+                  itemCount: upcomingEvents.length,
                   itemBuilder: (context, index) {
-                    final event = events[index];
+                    final event = upcomingEvents[index];
                     return GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -155,7 +173,6 @@ class EventsTab extends StatelessWidget {
                                           error,
                                           stackTrace,
                                         ) {
-                                          print('Failed to load image: $error');
                                           return Container(
                                             height: 160,
                                             width: double.infinity,
@@ -193,7 +210,7 @@ class EventsTab extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    formatEventDate(event.date),
+                                    event.date,
                                     style: const TextStyle(
                                       color: Colors.grey,
                                       fontSize: 14,

@@ -418,10 +418,14 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
                                   child: GestureDetector(
                                     onTap: () async {
                                       FocusScope.of(context).unfocus();
+                                      DateTime today = DateTime.now();
+                                      DateTime minDate = today.add(
+                                        const Duration(days: 7),
+                                      );
                                       DateTime? picked = await showDatePicker(
                                         context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime(2020),
+                                        initialDate: minDate,
+                                        firstDate: minDate,
                                         lastDate: DateTime(2100),
                                       );
                                       if (picked != null) {
@@ -714,7 +718,8 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
                           ],
                         ),
                       ),
-                    if (event.status == 'APPROVED') ...[
+                    if (event.status == 'APPROVED' ||
+                        event.status == 'END') ...[
                       SizedBox(height: 24),
                       GestureDetector(
                         onTap: () {
@@ -811,94 +816,79 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    textStyle: const TextStyle(fontSize: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                  ),
-                                  child: const Text('Download Applicants List'),
-                                ),
-                              ),
                             ],
                           ),
                         ),
                     ],
-                    const SizedBox(height: 32),
-                    Center(
-                      child: SizedBox(
-                        width: 150,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade500,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                    if (event.status != 'END') ...[
+                      const SizedBox(height: 32),
+                      Center(
+                        child: SizedBox(
+                          width: 150,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.shade500,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
-                          ),
-                          onPressed:
-                              _isSubmitting
-                                  ? null
-                                  : () async {
-                                    // Show confirmation dialog
-                                    final confirmed = await showDialog<bool>(
-                                      context: context,
-                                      builder:
-                                          (context) => AlertDialog(
-                                            title: const Text('Confirm Update'),
-                                            content: const Text(
-                                              'Are you sure you want to update this event?',
+                            onPressed:
+                                _isSubmitting
+                                    ? null
+                                    : () async {
+                                      // Show confirmation dialog
+                                      final confirmed = await showDialog<bool>(
+                                        context: context,
+                                        builder:
+                                            (context) => AlertDialog(
+                                              title: const Text(
+                                                'Confirm Update',
+                                              ),
+                                              content: const Text(
+                                                'Are you sure you want to update this event?',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed:
+                                                      () => Navigator.of(
+                                                        context,
+                                                      ).pop(false),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed:
+                                                      () => Navigator.of(
+                                                        context,
+                                                      ).pop(true),
+                                                  child: const Text('Update'),
+                                                ),
+                                              ],
                                             ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed:
-                                                    () => Navigator.of(
-                                                      context,
-                                                    ).pop(false),
-                                                child: const Text('Cancel'),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed:
-                                                    () => Navigator.of(
-                                                      context,
-                                                    ).pop(true),
-                                                child: const Text('Update'),
-                                              ),
-                                            ],
-                                          ),
-                                    );
-                                    if (confirmed == true) {
-                                      await _updateEventToPending();
-                                    }
-                                  },
-                          child:
-                              _isSubmitting
-                                  ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                                      );
+                                      if (confirmed == true) {
+                                        await _updateEventToPending();
+                                      }
+                                    },
+                            child:
+                                _isSubmitting
+                                    ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'Update',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  )
-                                  : const Text(
-                                    'Update',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                     if (event.status == 'PENDING') ...[
                       SizedBox(height: 24),
                       Center(

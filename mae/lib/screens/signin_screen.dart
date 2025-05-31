@@ -182,6 +182,9 @@ class _LoginScreenState extends State<SigninScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade500,
+                  ),
                   onPressed: _isLoading ? null : _login,
                   child:
                       _isLoading
@@ -190,7 +193,10 @@ class _LoginScreenState extends State<SigninScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                          : const Text('Login'),
+                          : const Text(
+                            'Sign In',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
                 ),
               ),
               if (_error != null) ...[

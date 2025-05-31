@@ -56,6 +56,7 @@ class MyEventsTab extends StatelessWidget {
                 .toList();
         final approvedEvents =
             events.where((e) => e.status == 'APPROVED').toList();
+        final completedEvents = events.where((e) => e.status == 'END').toList();
         return SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -121,6 +122,40 @@ class MyEventsTab extends StatelessWidget {
                                 builder:
                                     (context) => UpdateEventScreen(
                                       event: approvedEvents[index],
+                                    ),
+                              ),
+                            );
+                            (context as Element).markNeedsBuild();
+                          },
+                        );
+                      },
+                    ),
+                const SizedBox(height: 24),
+                const Text(
+                  'COMPLETED EVENTS',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                completedEvents.isEmpty
+                    ? const Center(child: Text('No completed events.'))
+                    : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: completedEvents.length,
+                      itemBuilder: (context, index) {
+                        return MyEventCard(
+                          event: completedEvents[index],
+                          onEdit: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => UpdateEventScreen(
+                                      event: completedEvents[index],
                                     ),
                               ),
                             );

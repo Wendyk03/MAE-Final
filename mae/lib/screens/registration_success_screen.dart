@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegistrationSuccessScreen extends StatelessWidget {
   const RegistrationSuccessScreen({Key? key}) : super(key: key);
@@ -51,7 +53,23 @@ class RegistrationSuccessScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
+                  // Fetch user role from Firestore
+                  int initialTabIndex = 2; // default to nonapu-user
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user != null) {
+                    final userDoc =
+                        await FirebaseFirestore.instance
+                            .collection('credentials')
+                            .doc(user.uid)
+                            .get();
+                    final role = userDoc.data()?['role'];
+                    if (role == 'apu-user') {
+                      initialTabIndex = 1;
+                    } else if (role == 'nonapu-user') {
+                      initialTabIndex = 2;
+                    }
+                  }
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
@@ -59,7 +77,7 @@ class RegistrationSuccessScreen extends StatelessWidget {
                           (context) => HomeScreen(
                             toggleTheme: () {},
                             isDarkMode: false,
-                            initialTabIndex: 2, // My Events tab
+                            initialTabIndex: initialTabIndex,
                           ),
                     ),
                     (route) => false,
