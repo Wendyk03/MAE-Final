@@ -80,8 +80,8 @@ class MyEventsTab extends StatelessWidget {
                       itemBuilder: (context, index) {
                         return MyEventCard(
                           event: pendingEvents[index],
-                          onEdit: () {
-                            Navigator.push(
+                          onEdit: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
@@ -90,6 +90,7 @@ class MyEventsTab extends StatelessWidget {
                                     ),
                               ),
                             );
+                            (context as Element).markNeedsBuild();
                           },
                         );
                       },
@@ -113,8 +114,8 @@ class MyEventsTab extends StatelessWidget {
                       itemBuilder: (context, index) {
                         return MyEventCard(
                           event: approvedEvents[index],
-                          onEdit: () {
-                            Navigator.push(
+                          onEdit: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
@@ -123,6 +124,7 @@ class MyEventsTab extends StatelessWidget {
                                     ),
                               ),
                             );
+                            (context as Element).markNeedsBuild();
                           },
                         );
                       },
@@ -184,8 +186,8 @@ class MyEventsTab extends StatelessWidget {
                       itemBuilder: (context, index) {
                         return MyEventCard(
                           event: rejectedEvents[index],
-                          onEdit: () {
-                            Navigator.push(
+                          onEdit: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
@@ -194,6 +196,7 @@ class MyEventsTab extends StatelessWidget {
                                     ),
                               ),
                             );
+                            (context as Element).markNeedsBuild();
                           },
                         );
                       },
@@ -257,8 +260,8 @@ class MyEventsTab extends StatelessWidget {
                       itemBuilder: (context, index) {
                         return MyEventCard(
                           event: terminatedEvents[index],
-                          onEdit: () {
-                            Navigator.push(
+                          onEdit: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
@@ -267,6 +270,7 @@ class MyEventsTab extends StatelessWidget {
                                     ),
                               ),
                             );
+                            (context as Element).markNeedsBuild();
                           },
                         );
                       },

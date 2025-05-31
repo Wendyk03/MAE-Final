@@ -156,7 +156,7 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
         'applicant': originalData['applicant'] ?? [],
         'fee_collected': originalData['fee_collected'] ?? 0.0,
         'uid': originalData['uid'] ?? '',
-        'updatedAt': FieldValue.serverTimestamp(), // Add update timestamp
+        'createdAt': originalData['createdAt'] ?? '', // Add update timestamp
       };
       // If event is from 'rejected', use the rejected update logic
       if (event.status == 'REJECTED') {
@@ -174,6 +174,9 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
         for (var doc in rejectedQuery.docs) {
           await doc.reference.delete();
         }
+        await Future.delayed(
+          const Duration(milliseconds: 300),
+        ); // Give Firestore time to update
       } else if (event.status == 'TERMINATED') {
         await FirebaseFirestore.instance
             .collection('events')
@@ -189,6 +192,9 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
         for (var doc in terminatedQuery.docs) {
           await doc.reference.delete();
         }
+        await Future.delayed(
+          const Duration(milliseconds: 300),
+        ); // Give Firestore time to update
       } else if (event.status == 'ACTION NEEDED' ||
           event.status == 'APPROVED') {
         // If event is from events collection, update in place (do not create new)
