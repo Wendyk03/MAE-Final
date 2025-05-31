@@ -54,6 +54,7 @@ class AdminEventInProgressTab extends StatelessWidget {
                         .map((doc) {
                           final data = doc.data() as Map<String, dynamic>;
                           return Event(
+                            id: data['id'], // Pass the Firestore 'id' field to the Event model
                             name: data['name'] ?? '',
                             organizer: data['organizer'] ?? '',
                             date: data['date'] ?? '',
@@ -63,6 +64,7 @@ class AdminEventInProgressTab extends StatelessWidget {
                             status: data['status'] ?? '',
                             imageUrl: data['imageUrl'] ?? '',
                             details: data['details'],
+                            rejectionReason: data['rejectionReason'],
                           );
                         })
                         .where((event) {
@@ -82,7 +84,7 @@ class AdminEventInProgressTab extends StatelessWidget {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
-                      child: Text('No upcoming events found.'),
+                      child: Text('No in progress events found.'),
                     ),
                   );
                 }

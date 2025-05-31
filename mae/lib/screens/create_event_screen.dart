@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'registration_success_screen.dart';
+import 'payment_screen_na.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({Key? key}) : super(key: key);
@@ -21,7 +23,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _feeController = TextEditingController();
   final TextEditingController _organizerController = TextEditingController();
-  final TextEditingController _websiteController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
@@ -108,7 +109,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       } else {
         imageUrl = '';
       }
-      // Add event to Firestore and get the generated document ID
+      final user = FirebaseAuth.instance.currentUser;
       final docRef = await FirebaseFirestore.instance.collection('events').add({
         'name': _eventNameController.text,
         'location': _locationController.text,
@@ -116,18 +117,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         'time': _timeController.text,
         'fee': _feeController.text,
         'organizer': _organizerController.text,
-        'website': _websiteController.text,
         'details': _detailsController.text,
         'status': 'PENDING',
         'applicant': 0,
         'fee_collected': 0,
         'createdAt': FieldValue.serverTimestamp(),
         'imageUrl': imageUrl,
-        'id': '', // placeholder, will update below
+        'id': '',
+        'uid': user?.uid ?? '',
       });
-      // Update the event with its unique id
       await docRef.update({'id': docRef.id});
-      // Add notification to 'notification' collection
       await FirebaseFirestore.instance.collection('notification').add({
         'title': 'New Event Pending Approval',
         'subtitle':
@@ -137,15 +136,47 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         'isRead': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
+      // --- User role check and navigation ---
+      String? userRole;
+      if (user != null) {
+        final userDoc =
+            await FirebaseFirestore.instance
+                .collection('credentials')
+                .doc(user.uid)
+                .get();
+        userRole = userDoc.data()?['role'] as String?;
+      }
       setState(() {
         _isSubmitting = false;
       });
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const RegistrationSuccessScreen(),
-        ),
-      );
+      if (userRole == 'nonapu-user') {
+        final event = Event(
+          name: _eventNameController.text,
+          date: _dateController.text,
+          time: _timeController.text,
+          location: _locationController.text,
+          organizer: _organizerController.text,
+          fee: double.tryParse(_feeController.text) ?? 0.0,
+          status: 'PENDING',
+          imageUrl: imageUrl,
+          details: _detailsController.text,
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    PaymentScreenNA(event: event, onPaymentComplete: () {}),
+          ),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const RegistrationSuccessScreen(),
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         _isSubmitting = false;
@@ -276,7 +307,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             onTap: () async {
                               FocusScope.of(context).unfocus();
                               DateTime today = DateTime.now();
-                              DateTime minDate = today.add(const Duration(days: 7));
+                              DateTime minDate = today.add(
+                                const Duration(days: 7),
+                              );
                               DateTime? picked = await showDatePicker(
                                 context: context,
                                 initialDate: minDate,
@@ -423,31 +456,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         const SizedBox(
                           width: 100,
                           child: Text(
-                            'External Website',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _websiteController,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: 'External Website',
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const SizedBox(
-                          width: 100,
-                          child: Text(
                             'Details',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
@@ -494,7 +502,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                  : const Text('Submit', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                  : const Text(
+                                    'Submit',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                         ),
                       ),
                     ),

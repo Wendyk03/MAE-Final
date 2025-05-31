@@ -75,6 +75,7 @@ class EventsTab extends StatelessWidget {
                         .map((doc) {
                           final data = doc.data() as Map<String, dynamic>;
                           return Event(
+                            id: data['id'], // Pass the Firestore 'id' field to the Event model
                             name: data['name'] ?? '',
                             organizer: data['organizer'] ?? '',
                             date: data['date'] ?? '',
@@ -84,6 +85,7 @@ class EventsTab extends StatelessWidget {
                             status: data['status'] ?? '',
                             imageUrl: data['imageUrl'] ?? '',
                             details: data['details'],
+                            rejectionReason: data['rejectionReason'],
                           );
                         })
                         .where((event) {

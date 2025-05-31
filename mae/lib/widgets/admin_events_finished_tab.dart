@@ -25,6 +25,7 @@ class AdminEventsFinishedTab extends StatelessWidget {
             snapshot.data!.docs.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
               return Event(
+                id: data['id'], // Pass the Firestore 'id' field to the Event model
                 name: data['name'] ?? '',
                 organizer: data['organizer'] ?? '',
                 date: data['date'] ?? '',
@@ -32,6 +33,9 @@ class AdminEventsFinishedTab extends StatelessWidget {
                 location: data['location'] ?? '',
                 fee: double.tryParse(data['fee'].toString()) ?? 0.0,
                 status: data['status'] ?? '',
+                imageUrl: data['imageUrl'] ?? '',
+                details: data['details'],
+                rejectionReason: data['rejectionReason'],
               );
             }).toList();
         final completedEvents = events.where((e) => e.status == 'END').toList();
@@ -51,16 +55,24 @@ class AdminEventsFinishedTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: completedEvents.length,
-                  itemBuilder: (context, index) {
-                    return AdminEventsFinishedCard(
-                      event: completedEvents[index],
-                    );
-                  },
-                ),
+                if (completedEvents.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Text('No completed events found.'),
+                    ),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: completedEvents.length,
+                    itemBuilder: (context, index) {
+                      return AdminEventsFinishedCard(
+                        event: completedEvents[index],
+                      );
+                    },
+                  ),
               ],
             ),
           ),

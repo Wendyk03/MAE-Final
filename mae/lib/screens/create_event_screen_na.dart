@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'registration_success_screen_na.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'payment_screen_na.dart';
 
@@ -23,11 +22,9 @@ class _CreateEventScreenNAState extends State<CreateEventScreenNA> {
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _feeController = TextEditingController();
   final TextEditingController _organizerController = TextEditingController();
-  final TextEditingController _websiteController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
-  String _status = 'PENDING';
 
   // Image picker related variables
   final ImagePicker _picker = ImagePicker();
@@ -175,7 +172,6 @@ class _CreateEventScreenNAState extends State<CreateEventScreenNA> {
         'time': _timeController.text,
         'fee': _feeController.text,
         'organizer': _organizerController.text,
-        'website': _websiteController.text,
         'details': _detailsController.text,
         'status': 'PENDING',
         'createdAt': FieldValue.serverTimestamp(),
@@ -191,7 +187,7 @@ class _CreateEventScreenNAState extends State<CreateEventScreenNA> {
         organizer: _organizerController.text,
         fee: double.tryParse(_feeController.text) ?? 0.0,
         status: 'PENDING',
-        imageUrl: imageUrl ?? '',
+        imageUrl: imageUrl,
         details: _detailsController.text,
       );
 
@@ -284,12 +280,6 @@ class _CreateEventScreenNAState extends State<CreateEventScreenNA> {
                     ),
                     const SizedBox(height: 12),
                     _buildTextField('Organized by', _organizerController, true),
-                    const SizedBox(height: 12),
-                    _buildTextField(
-                      'External Website',
-                      _websiteController,
-                      false,
-                    ),
                     const SizedBox(height: 12),
                     _buildTextField(
                       'Details',

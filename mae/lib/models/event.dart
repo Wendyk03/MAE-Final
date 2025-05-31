@@ -1,4 +1,5 @@
 class Event {
+  final String? id; // Add this line
   final String name;
   final String organizer;
   final String date;
@@ -12,6 +13,7 @@ class Event {
   bool isRegistered;
 
   Event({
+    this.id, // Add this line
     required this.name,
     required this.organizer,
     required this.date,

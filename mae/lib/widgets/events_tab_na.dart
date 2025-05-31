@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../screens/create_event_screen_na.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../screens/create_event_screen.dart';
 
 class EventsTabNA extends StatelessWidget {
   const EventsTabNA({Key? key}) : super(key: key);
@@ -44,7 +45,7 @@ class EventsTabNA extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CreateEventScreenNA(),
+                    builder: (context) => const CreateEventScreen(),
                   ),
                 );
               },
@@ -52,6 +53,43 @@ class EventsTabNA extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class Event {
+  final String id;
+  final String title;
+  final String description;
+  final DateTime date;
+  final TimeOfDay time;
+  final double fee;
+
+  Event({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.date,
+    required this.time,
+    required this.fee,
+  });
+
+  factory Event.fromFirestore(Map<String, dynamic> data) {
+    DateTime parsedDate;
+    if (data['date'] is Timestamp) {
+      parsedDate = (data['date'] as Timestamp).toDate();
+    } else if (data['date'] is String) {
+      parsedDate = DateTime.tryParse(data['date']) ?? DateTime.now();
+    } else {
+      parsedDate = DateTime.now();
+    }
+    return Event(
+      id: data['id'] ?? '',
+      title: data['title'] ?? '',
+      description: data['description'] ?? '',
+      date: parsedDate,
+      time: TimeOfDay.fromDateTime(parsedDate),
+      fee: double.tryParse(data['fee'].toString()) ?? 0.0,
     );
   }
 }

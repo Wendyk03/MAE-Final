@@ -26,9 +26,17 @@ class MyEventsTabNA extends StatelessWidget {
             snapshot.data!.docs.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
               return Event(
+                id: data['id'], // Pass the Firestore 'id' field to the Event model
                 name: data['name'] ?? '',
+                organizer: data['organizer'] ?? '',
                 date: data['date'] ?? '',
+                time: data['time'] ?? '',
+                location: data['location'] ?? '',
+                fee: double.tryParse(data['fee'].toString()) ?? 0.0,
                 status: data['status'] ?? '',
+                imageUrl: data['imageUrl'] ?? '',
+                details: data['details'],
+                rejectionReason: data['rejectionReason'],
               );
             }).toList();
 

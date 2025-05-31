@@ -25,7 +25,6 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _feeController = TextEditingController();
   final TextEditingController _organizerController = TextEditingController();
-  final TextEditingController _websiteController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
@@ -44,7 +43,11 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
     _locationController.text = event.location;
     _dateController.text = event.date;
     _timeController.text = event.time;
-    _feeController.text = event.fee.toString();
+    // Robustly parse fee as string or number
+    _feeController.text =
+        event.fee is double
+            ? event.fee.toString()
+            : double.tryParse(event.fee.toString())?.toString() ?? '0.0';
     _organizerController.text = event.organizer;
     _detailsController.text = event.details ?? '';
   }
@@ -101,8 +104,8 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
 
   // Remove unused _submitEvent method
 
-  // Add this function to handle update for rejected events
-  Future<void> _updateRejectedEvent() async {
+  // Add this function to handle update for events with status ACTION NEEDED, APPROVED, REJECTED, or TERMINATED
+  Future<void> _updateEventToPending() async {
     if (!_formKey.currentState!.validate()) {
       setState(() {
         _submitError = 'Please fill all required fields.';
@@ -127,31 +130,84 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
       } else {
         imageUrl = event.imageUrl;
       }
-      // Add event back to 'events' collection (exclude rejection reason)
-      await FirebaseFirestore.instance.collection('events').add({
+      // Fetch original event data for missing fields
+      Map<String, dynamic> originalData = {};
+      if (event.id != null && event.id!.isNotEmpty) {
+        final doc =
+            await FirebaseFirestore.instance
+                .collection('events')
+                .doc(event.id)
+                .get();
+        if (doc.exists) {
+          originalData = doc.data() ?? {};
+        }
+      }
+      final updatedEvent = {
+        'id': event.id,
         'name': _eventNameController.text,
-        'location': _locationController.text,
+        'organizer': _organizerController.text,
         'date': _dateController.text,
         'time': _timeController.text,
-        'fee': _feeController.text,
-        'organizer': _organizerController.text,
-        'website': _websiteController.text,
-        'details': _detailsController.text,
+        'location': _locationController.text,
+        'fee': _feeController.text, // Store as string for consistency
         'status': 'PENDING',
-        'createdAt': FieldValue.serverTimestamp(),
         'imageUrl': imageUrl,
-      });
-      // Delete from 'rejected' collection
-      final rejectedQuery =
+        'details': _detailsController.text,
+        'applicant': originalData['applicant'] ?? [],
+        'fee_collected': originalData['fee_collected'] ?? 0.0,
+        'uid': originalData['uid'] ?? '',
+        'updatedAt': FieldValue.serverTimestamp(), // Add update timestamp
+      };
+      // If event is from 'rejected', use the rejected update logic
+      if (event.status == 'REJECTED') {
+        await FirebaseFirestore.instance
+            .collection('events')
+            .doc(event.id)
+            .set(updatedEvent);
+        // Delete from 'rejected' collection by id
+        final rejectedQuery =
+            await FirebaseFirestore.instance
+                .collection('rejected')
+                .where('id', isEqualTo: event.id)
+                .limit(1)
+                .get();
+        for (var doc in rejectedQuery.docs) {
+          await doc.reference.delete();
+        }
+      } else if (event.status == 'TERMINATED') {
+        await FirebaseFirestore.instance
+            .collection('events')
+            .doc(event.id)
+            .set(updatedEvent);
+        // Delete from 'terminated' collection by id
+        final terminatedQuery =
+            await FirebaseFirestore.instance
+                .collection('terminated')
+                .where('id', isEqualTo: event.id)
+                .limit(1)
+                .get();
+        for (var doc in terminatedQuery.docs) {
+          await doc.reference.delete();
+        }
+      } else if (event.status == 'ACTION NEEDED' ||
+          event.status == 'APPROVED') {
+        // If event is from events collection, update in place (do not create new)
+        await FirebaseFirestore.instance
+            .collection('events')
+            .doc(event.id)
+            .set(updatedEvent);
+      } else {
+        // Fallback: update in place if id exists, otherwise add new
+        if (event.id != null && event.id!.isNotEmpty) {
           await FirebaseFirestore.instance
-              .collection('rejected')
-              .where('name', isEqualTo: event.name)
-              .where('organizer', isEqualTo: event.organizer)
-              .where('date', isEqualTo: event.date)
-              .limit(1)
-              .get();
-      for (var doc in rejectedQuery.docs) {
-        await doc.reference.delete();
+              .collection('events')
+              .doc(event.id)
+              .set(updatedEvent);
+        } else {
+          await FirebaseFirestore.instance
+              .collection('events')
+              .add(updatedEvent);
+        }
       }
       setState(() {
         _isSubmitting = false;
@@ -510,33 +566,6 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
                                 const SizedBox(
                                   width: 100,
                                   child: Text(
-                                    'External Website',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _websiteController,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'External Website',
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                const SizedBox(
-                                  width: 100,
-                                  child: Text(
                                     'Details',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -600,6 +629,81 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
                                     ],
                                   ),
                                 ),
+                              ),
+                            // Show admin instructions if status is ACTION NEEDED
+                            if (event.status == 'ACTION NEEDED' &&
+                                event.id != null &&
+                                event.id!.isNotEmpty)
+                              FutureBuilder<
+                                QuerySnapshot<Map<String, dynamic>>
+                              >(
+                                future:
+                                    FirebaseFirestore.instance
+                                        .collection('instructions')
+                                        .where('eventId', isEqualTo: event.id)
+                                        .limit(1)
+                                        .get(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 16.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+                                  if (!snapshot.hasData ||
+                                      snapshot.data!.docs.isEmpty) {
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 16.0),
+                                      child: Text(
+                                        'No admin instructions found for this event.',
+                                        style: TextStyle(color: Colors.orange),
+                                      ),
+                                    );
+                                  }
+                                  final data = snapshot.data!.docs.first.data();
+                                  final title =
+                                      data['title'] ?? 'Action Needed';
+                                  final description = data['description'] ?? '';
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 16.0),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade50,
+                                        border: Border.all(
+                                          color: Colors.orange.shade200,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            title,
+                                            style: const TextStyle(
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            description,
+                                            style: const TextStyle(
+                                              color: Colors.orange,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                           ],
                         ),
@@ -767,7 +871,7 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
                                           ),
                                     );
                                     if (confirmed == true) {
-                                      await _updateRejectedEvent();
+                                      await _updateEventToPending();
                                     }
                                   },
                           child:

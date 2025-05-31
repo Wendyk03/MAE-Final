@@ -54,6 +54,7 @@ class EventsTab extends StatelessWidget {
                         .map((doc) {
                           final data = doc.data() as Map<String, dynamic>;
                           return Event(
+                            id: data['id'], // Pass the Firestore 'id' field to the Event model
                             name: data['name'] ?? '',
                             organizer: data['organizer'] ?? '',
                             date: data['date'] ?? '',
@@ -63,14 +64,12 @@ class EventsTab extends StatelessWidget {
                             status: data['status'] ?? '',
                             imageUrl: data['imageUrl'] ?? '',
                             details: data['details'],
+                            rejectionReason: data['rejectionReason'],
                           );
                         })
                         .where((event) {
                           // Show events whose status is NOT "APPROVED" or "END"
-                          if (event.status == 'APPROVED' ||
-                              event.status == 'REJECTED' ||
-                              event.status == 'END')
-                            return false;
+                          if (!(event.status == 'PENDING')) return false;
                           final eventDate = _parseDate(event.date);
                           if (eventDate == null) return false;
                           final eventDay = DateTime(

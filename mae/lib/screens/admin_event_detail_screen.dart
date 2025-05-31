@@ -435,12 +435,8 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                                     builder:
                                         (context) => RequestUpdateScreen(
                                           eventId:
-                                              event.name +
-                                              '_' +
-                                              event.date +
-                                              '_' +
-                                              event
-                                                  .organizer, // fallback composite id
+                                              event.id ??
+                                              '', // fallback composite id
                                           eventTitle: event.name,
                                         ),
                                   ),
@@ -473,112 +469,6 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (applicantCount == 0) ...[
-                            ElevatedButton(
-                              onPressed: () async {
-                                final TextEditingController reasonController =
-                                    TextEditingController();
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder:
-                                      (context) => AlertDialog(
-                                        title: const Text('Terminate Event'),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Text(
-                                              'Are you sure you want to terminate this event?',
-                                            ),
-                                            const SizedBox(height: 16),
-                                            TextField(
-                                              controller: reasonController,
-                                              decoration: const InputDecoration(
-                                                labelText:
-                                                    'Reason for termination',
-                                                border: OutlineInputBorder(),
-                                              ),
-                                              maxLines: 2,
-                                            ),
-                                          ],
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed:
-                                                () => Navigator.of(
-                                                  context,
-                                                ).pop(false),
-                                            child: const Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed:
-                                                () => Navigator.of(
-                                                  context,
-                                                ).pop(true),
-                                            child: const Text('Confirm'),
-                                          ),
-                                        ],
-                                      ),
-                                );
-                                if (confirm == true) {
-                                  final reason = reasonController.text.trim();
-                                  // Find and update the event status to 'TERMINATED' with reason and timestamp
-                                  final query =
-                                      await FirebaseFirestore.instance
-                                          .collection('events')
-                                          .where('name', isEqualTo: event.name)
-                                          .where('date', isEqualTo: event.date)
-                                          .where(
-                                            'organizer',
-                                            isEqualTo: event.organizer,
-                                          )
-                                          .get();
-                                  for (var doc in query.docs) {
-                                    await FirebaseFirestore.instance
-                                        .collection('terminate')
-                                        .add({
-                                          ...doc.data(),
-                                          'status': 'TERMINATED',
-                                          'terminationReason': reason,
-                                          'terminatedAt':
-                                              FieldValue.serverTimestamp(),
-                                        });
-                                    await doc.reference.delete();
-                                  }
-                                  if (mounted) {
-                                    Navigator.of(
-                                      context,
-                                    ).popUntil((route) => route.isFirst);
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => AdminHomeScreen(
-                                              toggleTheme: () {},
-                                              isDarkMode: false,
-                                            ),
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red.shade600,
-                                minimumSize: const Size(120, 45),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              child: const Text(
-                                'Terminate',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                          ],
                           ElevatedButton(
                             onPressed: () {
                               Navigator.of(context).push(
@@ -586,12 +476,8 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                                   builder:
                                       (context) => RequestUpdateScreen(
                                         eventId:
-                                            event.name +
-                                            '_' +
-                                            event.date +
-                                            '_' +
-                                            event
-                                                .organizer, // fallback composite id
+                                            event.id ??
+                                            '', // Ensure eventId is a non-null String
                                         eventTitle: event.name,
                                       ),
                                 ),

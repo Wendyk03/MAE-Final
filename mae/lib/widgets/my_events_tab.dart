@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/event.dart';
 import '../screens/update_event_screen.dart';
 import 'my_event_card.dart';
@@ -19,27 +20,42 @@ class MyEventsTab extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No events found.'));
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
         }
+        final user = FirebaseAuth.instance.currentUser;
         final events =
-            snapshot.data!.docs.map((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              return Event(
-                name: data['name'] ?? '',
-                organizer: data['organizer'] ?? '',
-                date: data['date'] ?? '',
-                time: data['time'] ?? '',
-                location: data['location'] ?? '',
-                fee: double.tryParse(data['fee'].toString()) ?? 0.0,
-                status: data['status'] ?? '',
-              );
-            }).toList();
+            snapshot.data!.docs
+                .map((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  // Only include events where uid matches current user
+                  if (data['uid'] == user?.uid) {
+                    return Event(
+                      id: data['id'], // Pass the Firestore 'id' field to the Event model
+                      name: data['name'] ?? '',
+                      organizer: data['organizer'] ?? '',
+                      date: data['date'] ?? '',
+                      time: data['time'] ?? '',
+                      location: data['location'] ?? '',
+                      fee: double.tryParse(data['fee'].toString()) ?? 0.0,
+                      status: data['status'] ?? '',
+                      imageUrl: data['imageUrl'] ?? '',
+                      details: data['details'],
+                      rejectionReason: data['rejectionReason'],
+                    );
+                  }
+                  return null;
+                })
+                .whereType<Event>()
+                .toList();
         final pendingEvents =
-            events.where((e) => e.status == 'PENDING').toList();
+            events
+                .where(
+                  (e) => e.status == 'PENDING' || e.status == 'ACTION NEEDED',
+                )
+                .toList();
         final approvedEvents =
             events.where((e) => e.status == 'APPROVED').toList();
-        // Remove unused rejectedEvents variable, as rejected events are now fetched from the 'rejected' collection below
         return SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -55,27 +71,29 @@ class MyEventsTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: pendingEvents.length,
-                  itemBuilder: (context, index) {
-                    return MyEventCard(
-                      event: pendingEvents[index],
-                      onEdit: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => UpdateEventScreen(
-                                  event: pendingEvents[index],
-                                ),
-                          ),
+                pendingEvents.isEmpty
+                    ? const Center(child: Text('No pending events.'))
+                    : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: pendingEvents.length,
+                      itemBuilder: (context, index) {
+                        return MyEventCard(
+                          event: pendingEvents[index],
+                          onEdit: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => UpdateEventScreen(
+                                      event: pendingEvents[index],
+                                    ),
+                              ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
                 const SizedBox(height: 24),
                 const Text(
                   'YOUR UPCOMING EVENTS',
@@ -86,27 +104,29 @@ class MyEventsTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: approvedEvents.length,
-                  itemBuilder: (context, index) {
-                    return MyEventCard(
-                      event: approvedEvents[index],
-                      onEdit: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => UpdateEventScreen(
-                                  event: approvedEvents[index],
-                                ),
-                          ),
+                approvedEvents.isEmpty
+                    ? const Center(child: Text('No upcoming events.'))
+                    : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: approvedEvents.length,
+                      itemBuilder: (context, index) {
+                        return MyEventCard(
+                          event: approvedEvents[index],
+                          onEdit: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => UpdateEventScreen(
+                                      event: approvedEvents[index],
+                                    ),
+                              ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
                 const SizedBox(height: 24),
                 const Text(
                   'REJECTED EVENTS',
@@ -133,19 +153,30 @@ class MyEventsTab extends StatelessWidget {
                       return const Center(child: Text('No rejected events.'));
                     }
                     final rejectedEvents =
-                        rejectedSnapshot.data!.docs.map((doc) {
-                          final data = doc.data() as Map<String, dynamic>;
-                          return Event(
-                            name: data['name'] ?? '',
-                            organizer: data['organizer'] ?? '',
-                            date: data['date'] ?? '',
-                            time: data['time'] ?? '',
-                            location: data['location'] ?? '',
-                            fee: double.tryParse(data['fee'].toString()) ?? 0.0,
-                            status: data['status'] ?? 'REJECTED',
-                            rejectionReason: data['rejectionReason'],
-                          );
-                        }).toList();
+                        rejectedSnapshot.data!.docs
+                            .map((doc) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              if (data['uid'] == user?.uid) {
+                                return Event(
+                                  id: data['id'], // Pass the Firestore 'id' field to the Event model
+                                  name: data['name'] ?? '',
+                                  organizer: data['organizer'] ?? '',
+                                  date: data['date'] ?? '',
+                                  time: data['time'] ?? '',
+                                  location: data['location'] ?? '',
+                                  fee:
+                                      double.tryParse(data['fee'].toString()) ??
+                                      0.0,
+                                  status: data['status'] ?? 'REJECTED',
+                                  rejectionReason: data['rejectionReason'],
+                                  imageUrl: data['imageUrl'] ?? '',
+                                  details: data['details'],
+                                );
+                              }
+                              return null;
+                            })
+                            .whereType<Event>()
+                            .toList();
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -160,6 +191,79 @@ class MyEventsTab extends StatelessWidget {
                                 builder:
                                     (context) => UpdateEventScreen(
                                       event: rejectedEvents[index],
+                                    ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'TERMINATED EVENTS',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                StreamBuilder<QuerySnapshot>(
+                  stream:
+                      FirebaseFirestore.instance
+                          .collection('terminate')
+                          .orderBy('terminatedAt', descending: true)
+                          .snapshots(),
+                  builder: (context, terminatedSnapshot) {
+                    if (terminatedSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!terminatedSnapshot.hasData ||
+                        terminatedSnapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('No terminated events.'));
+                    }
+                    final terminatedEvents =
+                        terminatedSnapshot.data!.docs
+                            .map((doc) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              if (data['uid'] == user?.uid) {
+                                return Event(
+                                  id: data['id'], // Pass the Firestore 'id' field to the Event model
+                                  name: data['name'] ?? '',
+                                  organizer: data['organizer'] ?? '',
+                                  date: data['date'] ?? '',
+                                  time: data['time'] ?? '',
+                                  location: data['location'] ?? '',
+                                  fee:
+                                      double.tryParse(data['fee'].toString()) ??
+                                      0.0,
+                                  status: data['status'] ?? 'TERMINATED',
+                                  rejectionReason: data['terminateReason'],
+                                  imageUrl: data['imageUrl'] ?? '',
+                                  details: data['details'],
+                                );
+                              }
+                              return null;
+                            })
+                            .whereType<Event>()
+                            .toList();
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: terminatedEvents.length,
+                      itemBuilder: (context, index) {
+                        return MyEventCard(
+                          event: terminatedEvents[index],
+                          onEdit: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => UpdateEventScreen(
+                                      event: terminatedEvents[index],
                                     ),
                               ),
                             );

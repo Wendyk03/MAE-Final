@@ -40,22 +40,11 @@ class _RequestUpdateScreenState extends State<RequestUpdateScreen> {
         'description': desc,
         'createdAt': FieldValue.serverTimestamp(),
       });
-      // Update event status to 'NEED UPDATE' in events collection
-      final eventQuery =
-          await FirebaseFirestore.instance
-              .collection('events')
-              .where('name', isEqualTo: widget.eventTitle)
-              .where(
-                FieldPath.documentId,
-                isGreaterThanOrEqualTo: '',
-              ) // workaround for composite id
-              .get();
-      for (var doc in eventQuery.docs) {
-        // Optionally, check more fields for uniqueness if needed
-        if (doc.data()['name'] == widget.eventTitle) {
-          await doc.reference.update({'status': 'ACTION NEEDED'});
-        }
-      }
+      // Update event status to 'ACTION NEEDED' in events collection using eventId
+      final eventDoc = FirebaseFirestore.instance
+          .collection('events')
+          .doc(widget.eventId);
+      await eventDoc.update({'status': 'ACTION NEEDED'});
       setState(() {
         _isLoading = false;
       });
