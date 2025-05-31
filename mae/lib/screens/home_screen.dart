@@ -52,26 +52,12 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Row(
           children: [
             Container(
-              height: 40,
-              width: 40,
-              color: Colors.blue.shade200,
-              child: Center(
-                child: Text(
-                  'APU',
-                  style: TextStyle(
-                    color: Colors.blue.shade800,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'A·P·U',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
+              height: 100,
+              width: 120,
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset('assets/apu_logo.png', fit: BoxFit.contain),
               ),
             ),
           ],

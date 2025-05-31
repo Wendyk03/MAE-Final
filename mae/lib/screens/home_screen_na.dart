@@ -41,7 +41,21 @@ class _HomeScreenNAState extends State<HomeScreenNA> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('APU Event App'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              height: 100,
+              width: 120,
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset('assets/apu_logo.png', fit: BoxFit.contain),
+              ),
+            ),
+          ],
+        ),
 
         actions: [
           IconButton(
