@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/event.dart';
 import 'registration_success_screen.dart';
 
@@ -185,21 +186,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         return;
                       }
                     }
+                    final user = await FirebaseAuth.instance.currentUser;
+                    if (user == null) return;
                     await FirebaseFirestore.instance
                         .collection('registrations')
                         .add({
                           'applicantName': _nameController.text,
                           'email': _emailController.text,
-                          'uid':
-                              FirebaseFirestore.instance
-                                  .collection('credentials')
-                                  .doc(
-                                    FirebaseFirestore.instance
-                                        .collection('uid')
-                                        .doc()
-                                        .id,
-                                  )
-                                  .id,
+                          'uid': user.uid, // Add uid here
                           'eventName': widget.event.name,
                           'eventId': widget.event.id,
                           'eventDetails': {
