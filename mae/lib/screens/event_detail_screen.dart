@@ -206,57 +206,40 @@ class EventDetailScreen extends StatelessWidget {
                           event.isRegistered
                               ? null
                               : () async {
-                                  final user = await FirebaseAuth.instance.currentUser;
-                                  if (user == null) return;
-                                  // Check if already registered
-                                  final regQuery = await FirebaseFirestore.instance
-                                      .collection('registrations')
-                                      .where('uid', isEqualTo: user.uid)
-                                      .where('eventId', isEqualTo: event.id)
-                                      .limit(1)
-                                      .get();
-                                  if (regQuery.docs.isNotEmpty) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Already Applied'),
-                                        content: const Text('You have already applied for this event.'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.of(context).pop(),
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  // --- If not registered, proceed ---
-                                  String? email;
-                                  String? applicantName;
-                                  final credDoc = await FirebaseFirestore.instance
-                                      .collection('credentials')
-                                      .doc(user.uid)
-                                      .get();
+                                // Fetch user info from credentials
+                                final user =
+                                    await FirebaseAuth.instance.currentUser;
+                                String? email;
+                                String? applicantName;
+                                if (user != null) {
+                                  final credDoc =
+                                      await FirebaseFirestore.instance
+                                          .collection('credentials')
+                                          .doc(user.uid)
+                                          .get();
                                   final credData = credDoc.data();
                                   email = credData?['email'] ?? user.email;
-                                  final firstName = credData?['firstName'] ?? '';
+                                  final firstName =
+                                      credData?['firstName'] ?? '';
                                   final lastName = credData?['lastName'] ?? '';
-                                  applicantName = (firstName + ' ' + lastName).trim();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PaymentScreen(
-                                        event: event,
-                                        onPaymentComplete: () {
-                                          onRegister(event);
-                                        },
-                                        initialName: applicantName,
-                                        initialEmail: email,
-                                      ),
-                                    ),
-                                  );
-                                },
+                                  applicantName =
+                                      (firstName + ' ' + lastName).trim();
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => PaymentScreen(
+                                          event: event,
+                                          onPaymentComplete: () {
+                                            onRegister(event);
+                                          },
+                                          initialName: applicantName,
+                                          initialEmail: email,
+                                        ),
+                                  ),
+                                );
+                              },
                       child: Text(
                         event.isRegistered
                             ? 'Already Registered'

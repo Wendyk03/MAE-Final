@@ -277,64 +277,6 @@ class MyEventsTab extends StatelessWidget {
                     );
                   },
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'REGISTERED EVENTS',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('registrations')
-                      .where('uid', isEqualTo: user?.uid)
-                      .orderBy('registeredAt', descending: true)
-                      .snapshots(),
-                  builder: (context, regSnapshot) {
-                    if (regSnapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (!regSnapshot.hasData || regSnapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text('No registered events.'));
-                    }
-                    // Deduplicate by eventId for this user
-                    final registeredEvents = <String, Event>{};
-                    for (final doc in regSnapshot.data!.docs) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final event = data['eventDetails'] ?? {};
-                      final eventId = data['eventId'] ?? '';
-                      if (eventId.isNotEmpty && !registeredEvents.containsKey(eventId)) {
-                        registeredEvents[eventId] = Event(
-                          id: eventId,
-                          name: event['name'] ?? '',
-                          organizer: event['organizer'] ?? '',
-                          date: event['date'] ?? '',
-                          time: event['time'] ?? '',
-                          location: event['location'] ?? '',
-                          fee: double.tryParse(event['fee'].toString()) ?? 0.0,
-                          status: event['status'] ?? '',
-                          imageUrl: event['imageUrl'] ?? '',
-                          details: event['details'],
-                          isRegistered: true,
-                        );
-                      }
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: registeredEvents.length,
-                      itemBuilder: (context, index) {
-                        return MyEventCard(
-                          event: registeredEvents.values.elementAt(index),
-                          onEdit: () {},
-                        );
-                      },
-                    );
-                  },
-                ),
               ],
             ),
           ),

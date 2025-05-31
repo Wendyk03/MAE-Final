@@ -899,6 +899,98 @@ class _CreateEventScreenState extends State<UpdateEventScreen> {
                         ),
                       ),
                     ),
+                    if (event.status == 'PENDING') ...[
+                      SizedBox(height: 24),
+                      Center(
+                        child: SizedBox(
+                          width: 150,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade400,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed:
+                                _isSubmitting
+                                    ? null
+                                    : () async {
+                                      final confirmed = await showDialog<bool>(
+                                        context: context,
+                                        builder:
+                                            (context) => AlertDialog(
+                                              title: const Text('Delete Event'),
+                                              content: const Text(
+                                                'Are you sure you want to delete this event? This action cannot be undone.',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed:
+                                                      () => Navigator.of(
+                                                        context,
+                                                      ).pop(false),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                  onPressed:
+                                                      () => Navigator.of(
+                                                        context,
+                                                      ).pop(true),
+                                                  child: const Text('Delete'),
+                                                ),
+                                              ],
+                                            ),
+                                      );
+                                      if (confirmed == true) {
+                                        setState(() {
+                                          _isSubmitting = true;
+                                          _submitError = null;
+                                        });
+                                        try {
+                                          await FirebaseFirestore.instance
+                                              .collection('events')
+                                              .doc(event.id)
+                                              .delete();
+                                          setState(() {
+                                            _isSubmitting = false;
+                                          });
+                                          Navigator.of(context).pop();
+                                        } catch (e) {
+                                          setState(() {
+                                            _isSubmitting = false;
+                                            _submitError =
+                                                'Failed to delete: \n' +
+                                                e.toString();
+                                          });
+                                        }
+                                      }
+                                    },
+                            child:
+                                _isSubmitting
+                                    ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'Delete',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                          ),
+                        ),
+                      ),
+                    ],
                     if (_submitError != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),

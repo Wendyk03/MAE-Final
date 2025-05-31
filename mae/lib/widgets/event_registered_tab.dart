@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisteredEventsTab extends StatelessWidget {
   const RegisteredEventsTab({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class RegisteredEventsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = DateTime(2025, 5, 13);
+    final user = FirebaseAuth.instance.currentUser;
     return StreamBuilder<QuerySnapshot>(
       stream:
           FirebaseFirestore.instance
@@ -50,7 +52,11 @@ class RegisteredEventsTab extends StatelessWidget {
             ),
           );
         }
-        final registrations = snapshot.data!.docs;
+        final registrations =
+            snapshot.data!.docs.where((doc) {
+              final reg = doc.data() as Map<String, dynamic>;
+              return reg['uid'] == user?.uid;
+            }).toList();
         final List<QueryDocumentSnapshot> upcoming = [];
         final List<QueryDocumentSnapshot> current = [];
         final List<QueryDocumentSnapshot> past = [];

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/event.dart';
 import 'registration_success_screen.dart';
 
@@ -28,7 +27,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _cardNumberController = TextEditingController();
   String? _cardError;
-  String? _nameError;
 
   @override
   void initState() {
@@ -69,10 +67,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const SizedBox(height: 8),
               TextField(
                 controller: _nameController,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                   labelText: 'Applicant Name*',
-                  errorText: _nameError,
                 ),
               ),
               const SizedBox(height: 8),
@@ -169,14 +166,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   onPressed: () async {
                     setState(() {
                       _cardError = null;
-                      _nameError = null;
                     });
-                    if (_nameController.text.trim().isEmpty) {
-                      setState(() {
-                        _nameError = 'Applicant name is required.';
-                      });
-                      return;
-                    }
                     if (_selectedPaymentMethod == 'Debit/Credit Card') {
                       final card = _cardNumberController.text.trim();
                       if (card.length != 16 || int.tryParse(card) == null) {
@@ -186,14 +176,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         return;
                       }
                     }
-                    final user = await FirebaseAuth.instance.currentUser;
-                    if (user == null) return;
                     await FirebaseFirestore.instance
                         .collection('registrations')
                         .add({
                           'applicantName': _nameController.text,
                           'email': _emailController.text,
-                          'uid': user.uid, // Add uid here
                           'eventName': widget.event.name,
                           'eventId': widget.event.id,
                           'eventDetails': {
