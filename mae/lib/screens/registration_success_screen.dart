@@ -27,28 +27,18 @@ class RegistrationSuccessScreen extends StatelessWidget {
                 color: Colors.grey.shade200,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.check,
-                color: Colors.blue.shade500,
-                size: 40,
-              ),
+              child: Icon(Icons.check, color: Colors.blue.shade500, size: 40),
             ),
             const SizedBox(height: 16),
             const Text(
               'Event Registered',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'You can now track the\nstatus of your event',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -65,11 +55,12 @@ class RegistrationSuccessScreen extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        toggleTheme: () {},
-                        isDarkMode: false,
-                        initialTabIndex: 1, // My Events tab
-                      ),
+                      builder:
+                          (context) => HomeScreen(
+                            toggleTheme: () {},
+                            isDarkMode: false,
+                            initialTabIndex: 2, // My Events tab
+                          ),
                     ),
                     (route) => false,
                   );
@@ -92,11 +83,12 @@ class RegistrationSuccessScreen extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        toggleTheme: () {},
-                        isDarkMode: false,
-                        initialTabIndex: 0, // Events tab
-                      ),
+                      builder:
+                          (context) => HomeScreen(
+                            toggleTheme: () {},
+                            isDarkMode: false,
+                            initialTabIndex: 0, // Events tab
+                          ),
                     ),
                     (route) => false,
                   );

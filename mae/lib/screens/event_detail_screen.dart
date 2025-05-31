@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import 'payment_screen.dart';
 import '../utils/date_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Event event;
@@ -203,7 +205,26 @@ class EventDetailScreen extends StatelessWidget {
                       onPressed:
                           event.isRegistered
                               ? null
-                              : () {
+                              : () async {
+                                // Fetch user info from credentials
+                                final user =
+                                    await FirebaseAuth.instance.currentUser;
+                                String? email;
+                                String? applicantName;
+                                if (user != null) {
+                                  final credDoc =
+                                      await FirebaseFirestore.instance
+                                          .collection('credentials')
+                                          .doc(user.uid)
+                                          .get();
+                                  final credData = credDoc.data();
+                                  email = credData?['email'] ?? user.email;
+                                  final firstName =
+                                      credData?['firstName'] ?? '';
+                                  final lastName = credData?['lastName'] ?? '';
+                                  applicantName =
+                                      (firstName + ' ' + lastName).trim();
+                                }
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -213,6 +234,8 @@ class EventDetailScreen extends StatelessWidget {
                                           onPaymentComplete: () {
                                             onRegister(event);
                                           },
+                                          initialName: applicantName,
+                                          initialEmail: email,
                                         ),
                                   ),
                                 );
