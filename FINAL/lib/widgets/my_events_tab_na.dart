@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'my_event_card.dart';
+import 'my_event_card_na.dart';
 
-class MyEventsTab extends StatelessWidget {
-  const MyEventsTab({Key? key}) : super(key: key);
+class MyEventsTabNA extends StatelessWidget {
+  const MyEventsTabNA({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class MyEventsTab extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: pendingEvents.length,
                   itemBuilder: (context, index) {
-                    return MyEventCard(event: pendingEvents[index]);
+                    return MyEventCardNA(event: pendingEvents[index]);
                   },
                 ),
                 const SizedBox(height: 24),
@@ -82,7 +82,7 @@ class MyEventsTab extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: approvedEvents.length,
                   itemBuilder: (context, index) {
-                    return MyEventCard(event: approvedEvents[index]);
+                    return MyEventCardNA(event: approvedEvents[index]);
                   },
                 ),
 
@@ -103,7 +103,7 @@ class MyEventsTab extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: completeEvents.length,
                   itemBuilder: (context, index) {
-                    return MyEventCard(event: completeEvents[index]);
+                    return MyEventCardNA(event: completeEvents[index]);
                   },
                 ),
               ],

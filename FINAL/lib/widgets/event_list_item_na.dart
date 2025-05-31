@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class EventListItem extends StatelessWidget {
+class EventListItemNA extends StatelessWidget {
   final String title;
   final String time;
   final String status;
 
-  const EventListItem({
+  const EventListItemNA({
     Key? key,
     required this.title,
     required this.time,
@@ -33,10 +33,7 @@ class EventListItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 time,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ],
           ),

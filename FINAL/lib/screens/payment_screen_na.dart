@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'registration_success_screen.dart';
+import 'registration_success_screen_na.dart';
 
 class Event {
   final String name;
@@ -26,21 +26,21 @@ class Event {
   });
 }
 
-class PaymentScreen extends StatefulWidget {
+class PaymentScreenNA extends StatefulWidget {
   final Event event;
   final VoidCallback onPaymentComplete;
 
-  const PaymentScreen({
+  const PaymentScreenNA({
     Key? key,
     required this.event,
     required this.onPaymentComplete,
   }) : super(key: key);
 
   @override
-  State<PaymentScreen> createState() => _PaymentScreenState();
+  State<PaymentScreenNA> createState() => _PaymentScreenNAState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
+class _PaymentScreenNAState extends State<PaymentScreenNA> {
   String _selectedPaymentMethod = 'Debit/Credit Card';
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -69,10 +69,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               const Text(
                 'Applicant Details',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -93,10 +90,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const SizedBox(height: 16),
               const Text(
                 'Register Fee',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Center(
@@ -172,33 +166,39 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                   onPressed: () async {
                     // Save registration info to Firebase
-                    await FirebaseFirestore.instance.collection('registrations').add({
-                      'applicantName': _nameController.text,
-                      'email': _emailController.text,
-                      'eventName': widget.event.name,
-                      'eventId': widget.event.name +
-                          widget.event.date +
-                          widget.event.organizer, // or use a real eventId if available
-                      'eventDetails': {
-                        'name': widget.event.name,
-                        'organizer': widget.event.organizer,
-                        'date': widget.event.date,
-                        'time': widget.event.time,
-                        'location': widget.event.location,
-                        'fee': widget.event.fee,
-                        'status': widget.event.status,
-                        'imageUrl': widget.event.imageUrl,
-                        'details': widget.event.details,
-                      },
-                      'registeredAt': FieldValue.serverTimestamp(),
-                    });
+                    await FirebaseFirestore.instance
+                        .collection('registrations')
+                        .add({
+                          'applicantName': _nameController.text,
+                          'email': _emailController.text,
+                          'eventName': widget.event.name,
+                          'eventId':
+                              widget.event.name +
+                              widget.event.date +
+                              widget
+                                  .event
+                                  .organizer, // or use a real eventId if available
+                          'eventDetails': {
+                            'name': widget.event.name,
+                            'organizer': widget.event.organizer,
+                            'date': widget.event.date,
+                            'time': widget.event.time,
+                            'location': widget.event.location,
+                            'fee': widget.event.fee,
+                            'status': widget.event.status,
+                            'imageUrl': widget.event.imageUrl,
+                            'details': widget.event.details,
+                          },
+                          'registeredAt': FieldValue.serverTimestamp(),
+                        });
                     // Call the callback to update registered status
                     widget.onPaymentComplete();
                     // Navigate to success screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RegistrationSuccessScreen(),
+                        builder:
+                            (context) => const RegistrationSuccessScreenNA(),
                       ),
                     );
                   },

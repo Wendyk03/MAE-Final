@@ -8,10 +8,10 @@ class Event {
   Event({required this.name, required this.date, required this.status});
 }
 
-class MyEventCard extends StatelessWidget {
+class MyEventCardNA extends StatelessWidget {
   final Event event;
 
-  const MyEventCard({Key? key, required this.event}) : super(key: key);
+  const MyEventCardNA({Key? key, required this.event}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

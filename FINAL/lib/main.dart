@@ -10,9 +10,7 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const EventApp());
 }
 
@@ -25,7 +23,7 @@ class EventApp extends StatefulWidget {
 
 class _EventAppState extends State<EventApp> {
   bool isDarkMode = false;
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -56,7 +54,7 @@ class Event {
   final String imageUrl;
   final String? details;
   bool isRegistered;
-  
+
   Event({
     required this.name,
     required this.organizer,
@@ -75,7 +73,7 @@ class Event {
 class HomeScreen extends StatefulWidget {
   final Function toggleTheme;
   final bool isDarkMode;
-  
+
   const HomeScreen({
     Key? key,
     required this.toggleTheme,
@@ -88,7 +86,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  
+
   // Shared events list that will be updated when a user registers for an event
   final List<Event> _upcomingEvents = [
     Event(
@@ -113,16 +111,16 @@ class _HomeScreenState extends State<HomeScreen> {
       name: 'Event Name',
       organizer: 'APU · Organizer',
       date: 'APR 27',
-      time: '2:00 PM - 5:00 PM', 
+      time: '2:00 PM - 5:00 PM',
       location: 'APU Campus, Main Hall',
       fee: 10.0,
       status: 'APPROVED',
     ),
   ];
-  
+
   final List<Event> _pendingEvents = [
     Event(
-      name: 'Event Name', 
+      name: 'Event Name',
       organizer: 'APU · Organizer',
       date: 'APR 27',
       time: '2:00 PM - 5:00 PM',
@@ -131,12 +129,12 @@ class _HomeScreenState extends State<HomeScreen> {
       status: 'PENDING',
     ),
   ];
-  
+
   // Add a list to store registered events
   final List<Event> _registeredEvents = [];
-  
+
   late final List<Widget> _screens;
-  
+
   @override
   void initState() {
     super.initState();
@@ -147,20 +145,20 @@ class _HomeScreenState extends State<HomeScreen> {
       const RegisteredEventsTab(),
     ];
   }
-  
+
   void _registerForEvent(Event event) {
     setState(() {
       // First check if the event is already registered
       bool alreadyRegistered = false;
       for (var registeredEvent in _registeredEvents) {
-        if (registeredEvent.name == event.name && 
+        if (registeredEvent.name == event.name &&
             registeredEvent.date == event.date &&
             registeredEvent.organizer == event.organizer) {
           alreadyRegistered = true;
           break;
         }
       }
-      
+
       if (!alreadyRegistered) {
         // Create a new event object for the registered events list
         final registeredEvent = Event(
@@ -174,10 +172,10 @@ class _HomeScreenState extends State<HomeScreen> {
           isRegistered: true,
         );
         _registeredEvents.add(registeredEvent);
-        
+
         // Update the original event's status in upcomingEvents
         for (int i = 0; i < _upcomingEvents.length; i++) {
-          if (_upcomingEvents[i].name == event.name && 
+          if (_upcomingEvents[i].name == event.name &&
               _upcomingEvents[i].date == event.date &&
               _upcomingEvents[i].organizer == event.organizer) {
             _upcomingEvents[i].isRegistered = true;
@@ -187,13 +185,13 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
-  
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -239,16 +237,11 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(
-              Icons.account_circle,
-              color: Colors.black,
-            ),
+            icon: const Icon(Icons.account_circle, color: Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
             },
           ),
@@ -257,10 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Events',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Calendar',
@@ -310,10 +300,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   bool _isSubmitting = false;
   String? _submitError;
-  
+
   // Function to pick image from gallery
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedFile != null) {
       if (kIsWeb) {
         final bytes = await pickedFile.readAsBytes();
@@ -332,7 +324,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     if (_imageFile == null && _webImageBytes == null) return null;
     try {
       final storageRef = FirebaseStorage.instance.ref();
-      final fileName = 'event_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'event_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final ref = storageRef.child(fileName);
       UploadTask uploadTask;
       if (kIsWeb && _webImageBytes != null) {
@@ -342,9 +335,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       } else {
         return null;
       }
-      final snapshot = await uploadTask.timeout(const Duration(seconds: 30), onTimeout: () {
-        throw Exception('Image upload timed out.');
-      });
+      final snapshot = await uploadTask.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Image upload timed out.');
+        },
+      );
       final url = await snapshot.ref.getDownloadURL();
       return url;
     } catch (e) {
@@ -355,7 +351,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       return null;
     }
   }
-  
+
   Future<void> _submitEvent() async {
     if (!_formKey.currentState!.validate()) {
       setState(() {
@@ -407,11 +403,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     } catch (e) {
       setState(() {
         _isSubmitting = false;
-        _submitError = 'Failed to submit: \n'+e.toString();
+        _submitError = 'Failed to submit: \n' + e.toString();
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -435,13 +431,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               height: 200,
               width: double.infinity,
               color: Colors.blue.shade400,
-              child: kIsWeb
-                ? (_webImageBytes != null
-                    ? Image.memory(_webImageBytes!, fit: BoxFit.cover)
-                    : _buildUploadPlaceholder())
-                : (_imageFile != null
-                    ? Image.file(_imageFile!, fit: BoxFit.cover)
-                    : _buildUploadPlaceholder()),
+              child:
+                  kIsWeb
+                      ? (_webImageBytes != null
+                          ? Image.memory(_webImageBytes!, fit: BoxFit.cover)
+                          : _buildUploadPlaceholder())
+                      : (_imageFile != null
+                          ? Image.file(_imageFile!, fit: BoxFit.cover)
+                          : _buildUploadPlaceholder()),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -465,9 +462,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Event Name',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -476,9 +471,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Event Name*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -490,9 +492,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Location',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -501,9 +501,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Location*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -515,9 +522,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Date',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -542,9 +547,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: 'Date*',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                 ),
-                                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                                validator:
+                                    (value) =>
+                                        value == null || value.isEmpty
+                                            ? 'Required'
+                                            : null,
                               ),
                             ),
                           ),
@@ -558,9 +570,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Time',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -582,9 +592,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: 'Time*',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                 ),
-                                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                                validator:
+                                    (value) =>
+                                        value == null || value.isEmpty
+                                            ? 'Required'
+                                            : null,
                               ),
                             ),
                           ),
@@ -598,9 +615,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Fee Charges',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -610,9 +625,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Fee Charges*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -624,9 +646,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Organized by',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -635,9 +655,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Organizer*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -649,9 +676,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'External Website',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -660,7 +685,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'External Website',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                           ),
                         ),
@@ -673,9 +701,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Details',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -685,9 +711,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Details*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -704,13 +737,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                           ),
                           onPressed: _isSubmitting ? null : _submitEvent,
-                          child: _isSubmitting
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text('Submit'),
+                          child:
+                              _isSubmitting
+                                  ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text('Submit'),
                         ),
                       ),
                     ),
@@ -736,21 +772,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(
-          Icons.image,
-          color: Colors.white,
-          size: 40,
-        ),
+        const Icon(Icons.image, color: Colors.white, size: 40),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               'Upload Event Poster',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(width: 16),
             ElevatedButton(
@@ -782,18 +811,16 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Profile',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: const Text('Profile', style: TextStyle(color: Colors.black)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
@@ -808,36 +835,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.grey,
-                child: Icon(
-                  Icons.person,
-                  size: 50,
-                  color: Colors.white,
-                ),
+                child: Icon(Icons.person, size: 50, color: Colors.white),
               ),
               const SizedBox(height: 16),
               const Text(
                 'User Name',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const Text(
                 'user@example.com',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
               const SizedBox(height: 32),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Change Password',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 16),
@@ -954,7 +968,11 @@ class EventsTab extends StatelessWidget {
             const SizedBox(height: 8),
             // Fetch events from Firebase
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('events').orderBy('createdAt', descending: true).snapshots(),
+              stream:
+                  FirebaseFirestore.instance
+                      .collection('events')
+                      .orderBy('createdAt', descending: true)
+                      .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -962,19 +980,23 @@ class EventsTab extends StatelessWidget {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text('No events found.'));
                 }
-                final events = snapshot.data!.docs.map((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  return Event(
-                    name: data['name'] ?? '',
-                    organizer: data['organizer'] ?? '',
-                    date: data['date'] ?? '',
-                    time: data['time'] ?? '',
-                    location: data['location'] ?? '',
-                    fee: double.tryParse(data['fee'].toString()) ?? 0.0,
-                    status: data['status'] ?? '',
-                    imageUrl: data['imageUrl'] ?? '',
-                  );
-                }).where((event) => event.status == 'APPROVED').toList();
+                final events =
+                    snapshot.data!.docs
+                        .map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return Event(
+                            name: data['name'] ?? '',
+                            organizer: data['organizer'] ?? '',
+                            date: data['date'] ?? '',
+                            time: data['time'] ?? '',
+                            location: data['location'] ?? '',
+                            fee: double.tryParse(data['fee'].toString()) ?? 0.0,
+                            status: data['status'] ?? '',
+                            imageUrl: data['imageUrl'] ?? '',
+                          );
+                        })
+                        .where((event) => event.status == 'APPROVED')
+                        .toList();
                 if (events.isEmpty) {
                   return const Center(child: Text('No approved events found.'));
                 }
@@ -989,10 +1011,11 @@ class EventsTab extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EventDetailScreen(
-                              event: event,
-                              onRegister: (_) {},
-                            ),
+                            builder:
+                                (context) => EventDetailScreen(
+                                  event: event,
+                                  onRegister: (_) {},
+                                ),
                           ),
                         );
                       },
@@ -1011,28 +1034,41 @@ class EventsTab extends StatelessWidget {
                                 topLeft: Radius.circular(12),
                                 topRight: Radius.circular(12),
                               ),
-                              child: event.imageUrl.isNotEmpty
-                                  ? Image.network(
-                                      event.imageUrl,
-                                      height: 160,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        print('Failed to load image: $error');
-                                        return Container(
-                                          height: 160,
-                                          width: double.infinity,
-                                          color: Colors.grey.shade300,
-                                          child: const Icon(Icons.error, size: 60, color: Colors.red),
-                                        );
-                                      },
-                                    )
-                                  : Container(
-                                      height: 160,
-                                      width: double.infinity,
-                                      color: Colors.grey.shade300,
-                                      child: const Icon(Icons.image, size: 60, color: Colors.white),
-                                    ),
+                              child:
+                                  event.imageUrl.isNotEmpty
+                                      ? Image.network(
+                                        event.imageUrl,
+                                        height: 160,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          print('Failed to load image: $error');
+                                          return Container(
+                                            height: 160,
+                                            width: double.infinity,
+                                            color: Colors.grey.shade300,
+                                            child: const Icon(
+                                              Icons.error,
+                                              size: 60,
+                                              color: Colors.red,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                      : Container(
+                                        height: 160,
+                                        width: double.infinity,
+                                        color: Colors.grey.shade300,
+                                        child: const Icon(
+                                          Icons.image,
+                                          size: 60,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(16.0),
@@ -1090,13 +1126,33 @@ String _formatEventDate(String dateStr) {
 }
 
 String _weekday(int w) {
-  const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  return days[w-1];
+  const days = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  return days[w - 1];
 }
 
 String _month(int m) {
   const months = [
-    '', 'January','February','March','April','May','June','July','August','September','October','November','December'
+    '',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   return months[m];
 }
@@ -1162,27 +1218,40 @@ class _CalendarTabState extends State<CalendarTab> {
           ),
           const SizedBox(height: 16),
           StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('registrations').orderBy('registeredAt', descending: true).snapshots(),
+            stream:
+                FirebaseFirestore.instance
+                    .collection('registrations')
+                    .orderBy('registeredAt', descending: true)
+                    .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text('No registered events for this date.'));
+                return const Center(
+                  child: Text('No registered events for this date.'),
+                );
               }
               final registrations = snapshot.data!.docs;
-              final filtered = registrations.where((doc) {
-                final event = (doc.data() as Map<String, dynamic>)['eventDetails'] ?? {};
-                final dateStr = event['date'] ?? '';
-                try {
-                  final dt = DateTime.parse(dateStr);
-                  return dt.year == selectedDate.year && dt.month == selectedDate.month && dt.day == selectedDate.day;
-                } catch (_) {
-                  return false;
-                }
-              }).toList();
+              final filtered =
+                  registrations.where((doc) {
+                    final event =
+                        (doc.data() as Map<String, dynamic>)['eventDetails'] ??
+                        {};
+                    final dateStr = event['date'] ?? '';
+                    try {
+                      final dt = DateTime.parse(dateStr);
+                      return dt.year == selectedDate.year &&
+                          dt.month == selectedDate.month &&
+                          dt.day == selectedDate.day;
+                    } catch (_) {
+                      return false;
+                    }
+                  }).toList();
               if (filtered.isEmpty) {
-                return const Center(child: Text('No registered events for this date.'));
+                return const Center(
+                  child: Text('No registered events for this date.'),
+                );
               }
               return ListView.builder(
                 shrinkWrap: true,
@@ -1192,10 +1261,15 @@ class _CalendarTabState extends State<CalendarTab> {
                   final reg = filtered[index].data() as Map<String, dynamic>;
                   final event = reg['eventDetails'] ?? {};
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: ListTile(
                       title: Text(event['name'] ?? ''),
-                      subtitle: Text('Time: ${event['time'] ?? ''}\nLocation: ${event['location'] ?? ''}'),
+                      subtitle: Text(
+                        'Time: ${event['time'] ?? ''}\nLocation: ${event['location'] ?? ''}',
+                      ),
                       trailing: Text('By: ${reg['applicantName'] ?? ''}'),
                     ),
                   );
@@ -1214,7 +1288,7 @@ class EventListItem extends StatelessWidget {
   final String title;
   final String time;
   final String status;
-  
+
   const EventListItem({
     Key? key,
     required this.title,
@@ -1242,19 +1316,13 @@ class EventListItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 time,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ],
           ),
           Text(
             status,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
           ),
         ],
       ),
@@ -1269,7 +1337,11 @@ class MyEventsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('events').orderBy('createdAt', descending: true).snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('events')
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1277,20 +1349,23 @@ class MyEventsTab extends StatelessWidget {
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(child: Text('No events found.'));
         }
-        final events = snapshot.data!.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return Event(
-            name: data['name'] ?? '',
-            organizer: data['organizer'] ?? '',
-            date: data['date'] ?? '',
-            time: data['time'] ?? '',
-            location: data['location'] ?? '',
-            fee: double.tryParse(data['fee'].toString()) ?? 0.0,
-            status: data['status'] ?? '',
-          );
-        }).toList();
-        final pendingEvents = events.where((e) => e.status == 'PENDING').toList();
-        final approvedEvents = events.where((e) => e.status == 'APPROVED').toList();
+        final events =
+            snapshot.data!.docs.map((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return Event(
+                name: data['name'] ?? '',
+                organizer: data['organizer'] ?? '',
+                date: data['date'] ?? '',
+                time: data['time'] ?? '',
+                location: data['location'] ?? '',
+                fee: double.tryParse(data['fee'].toString()) ?? 0.0,
+                status: data['status'] ?? '',
+              );
+            }).toList();
+        final pendingEvents =
+            events.where((e) => e.status == 'PENDING').toList();
+        final approvedEvents =
+            events.where((e) => e.status == 'APPROVED').toList();
         return SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -1344,10 +1419,7 @@ class MyEventsTab extends StatelessWidget {
 // My Event Card Widget
 class MyEventCard extends StatelessWidget {
   final Event event;
-  const MyEventCard({
-    Key? key,
-    required this.event,
-  }) : super(key: key);
+  const MyEventCard({Key? key, required this.event}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1358,9 +1430,7 @@ class MyEventCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -1383,10 +1453,7 @@ class MyEventCard extends StatelessWidget {
                   ),
                   Text(
                     dateSub,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                 ],
               ),
@@ -1406,9 +1473,10 @@ class MyEventCard extends StatelessWidget {
                   Text(
                     event.status,
                     style: TextStyle(
-                      color: event.status == 'APPROVED' 
-                          ? Colors.green 
-                          : Colors.orange,
+                      color:
+                          event.status == 'APPROVED'
+                              ? Colors.green
+                              : Colors.orange,
                       fontSize: 12,
                     ),
                   ),
@@ -1424,12 +1492,17 @@ class MyEventCard extends StatelessWidget {
 
 // Registered Events Tab
 class RegisteredEventsTab extends StatelessWidget {
-  const RegisteredEventsTab({Key? key, List<Event>? registeredEvents}) : super(key: key);
+  const RegisteredEventsTab({Key? key, List<Event>? registeredEvents})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('registrations').orderBy('registeredAt', descending: true).snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('registrations')
+              .orderBy('registeredAt', descending: true)
+              .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1441,26 +1514,16 @@ class RegisteredEventsTab extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.event_busy,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.event_busy, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
                     'No registered events yet',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                   SizedBox(height: 8),
                   Text(
                     'Apply for events to see them here',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -1471,7 +1534,12 @@ class RegisteredEventsTab extends StatelessWidget {
         final registrations = snapshot.data!.docs;
         return ListView.builder(
           itemCount: registrations.length,
-          padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
+          padding: const EdgeInsets.only(
+            top: 16,
+            left: 16,
+            right: 16,
+            bottom: 16,
+          ),
           itemBuilder: (context, index) {
             final reg = registrations[index].data() as Map<String, dynamic>;
             final event = reg['eventDetails'] ?? {};
@@ -1496,34 +1564,22 @@ class RegisteredEventsTab extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'By: ${event['organizer'] ?? ''}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Date: ${event['date'] ?? ''}  Time: ${event['time'] ?? ''}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Location: ${event['location'] ?? ''}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Fee: RM ${event['fee']?.toStringAsFixed(0) ?? '0'}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -1549,7 +1605,7 @@ class RegisteredEventsTab extends StatelessWidget {
 class EventDetailScreen extends StatelessWidget {
   final Event event;
   final Function(Event) onRegister;
-  
+
   const EventDetailScreen({
     Key? key,
     required this.event,
@@ -1566,10 +1622,7 @@ class EventDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          event.name,
-          style: const TextStyle(color: Colors.black),
-        ),
+        title: Text(event.name, style: const TextStyle(color: Colors.black)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
@@ -1583,27 +1636,28 @@ class EventDetailScreen extends StatelessWidget {
               height: 200,
               width: double.infinity,
               color: Colors.blue.shade400,
-              child: event.imageUrl.isNotEmpty
-                  ? Image.network(
-                      event.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        print('Failed to load image: $error');
-                        return Container(
-                          height: 200,
-                          width: double.infinity,
-                          color: Colors.grey.shade300,
-                          child: const Icon(Icons.error, size: 60, color: Colors.red),
-                        );
-                      },
-                    )
-                  : const Center(
-                      child: Icon(
-                        Icons.image,
-                        color: Colors.white,
-                        size: 40,
+              child:
+                  event.imageUrl.isNotEmpty
+                      ? Image.network(
+                        event.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('Failed to load image: $error');
+                          return Container(
+                            height: 200,
+                            width: double.infinity,
+                            color: Colors.grey.shade300,
+                            child: const Icon(
+                              Icons.error,
+                              size: 60,
+                              color: Colors.red,
+                            ),
+                          );
+                        },
+                      )
+                      : const Center(
+                        child: Icon(Icons.image, color: Colors.white, size: 40),
                       ),
-                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -1663,10 +1717,9 @@ class EventDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _formatEventDate(event.date) + (event.time.isNotEmpty ? ' at ${event.time}' : ''),
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
+                    _formatEventDate(event.date) +
+                        (event.time.isNotEmpty ? ' at ${event.time}' : ''),
+                    style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   if (event.location.isNotEmpty) ...[
@@ -1679,10 +1732,7 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                     Text(
                       event.location,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -1716,10 +1766,7 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                     Text(
                       event.details ?? '',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -1734,7 +1781,10 @@ class EventDetailScreen extends StatelessWidget {
                     Text(
                       event.status,
                       style: TextStyle(
-                        color: event.status == 'APPROVED' ? Colors.green : Colors.orange,
+                        color:
+                            event.status == 'APPROVED'
+                                ? Colors.green
+                                : Colors.orange,
                         fontSize: 14,
                       ),
                     ),
@@ -1750,22 +1800,28 @@ class EventDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(50),
                         ),
                       ),
-                      onPressed: event.isRegistered 
-                          ? null 
-                          : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PaymentScreen(
-                                    event: event,
-                                    onPaymentComplete: () {
-                                      onRegister(event);
-                                    },
+                      onPressed:
+                          event.isRegistered
+                              ? null
+                              : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => PaymentScreen(
+                                          event: event,
+                                          onPaymentComplete: () {
+                                            onRegister(event);
+                                          },
+                                        ),
                                   ),
-                                ),
-                              );
-                            },
-                      child: Text(event.isRegistered ? 'Already Registered' : 'Apply Now!'),
+                                );
+                              },
+                      child: Text(
+                        event.isRegistered
+                            ? 'Already Registered'
+                            : 'Apply Now!',
+                      ),
                     ),
                   ),
                 ],
@@ -1782,7 +1838,7 @@ class EventDetailScreen extends StatelessWidget {
 class PaymentScreen extends StatefulWidget {
   final Event event;
   final VoidCallback onPaymentComplete;
-  
+
   const PaymentScreen({
     Key? key,
     required this.event,
@@ -1798,7 +1854,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _cardNumberController = TextEditingController();
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1822,10 +1878,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               const Text(
                 'Applicant Details',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1846,10 +1899,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const SizedBox(height: 16),
               const Text(
                 'Register Fee',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Center(
@@ -1898,11 +1948,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                   const Text('Debit/Credit Card'),
                   const SizedBox(width: 4),
-                  Container(
-                    width: 30,
-                    height: 10,
-                    color: Colors.grey.shade300,
-                  ),
+                  Container(width: 30, height: 10, color: Colors.grey.shade300),
                 ],
               ),
               if (_selectedPaymentMethod == 'Debit/Credit Card')
@@ -1931,24 +1977,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                   onPressed: () async {
                     // Save registration info to Firebase
-                    await FirebaseFirestore.instance.collection('registrations').add({
-                      'applicantName': _nameController.text,
-                      'email': _emailController.text,
-                      'eventName': widget.event.name,
-                      'eventId': widget.event.name + widget.event.date + widget.event.organizer, // or use a real eventId if available
-                      'eventDetails': {
-                        'name': widget.event.name,
-                        'organizer': widget.event.organizer,
-                        'date': widget.event.date,
-                        'time': widget.event.time,
-                        'location': widget.event.location,
-                        'fee': widget.event.fee,
-                        'status': widget.event.status,
-                        'imageUrl': widget.event.imageUrl,
-                        'details': widget.event.details,
-                      },
-                      'registeredAt': FieldValue.serverTimestamp(),
-                    });
+                    await FirebaseFirestore.instance
+                        .collection('registrations')
+                        .add({
+                          'applicantName': _nameController.text,
+                          'email': _emailController.text,
+                          'eventName': widget.event.name,
+                          'eventId':
+                              widget.event.name +
+                              widget.event.date +
+                              widget
+                                  .event
+                                  .organizer, // or use a real eventId if available
+                          'eventDetails': {
+                            'name': widget.event.name,
+                            'organizer': widget.event.organizer,
+                            'date': widget.event.date,
+                            'time': widget.event.time,
+                            'location': widget.event.location,
+                            'fee': widget.event.fee,
+                            'status': widget.event.status,
+                            'imageUrl': widget.event.imageUrl,
+                            'details': widget.event.details,
+                          },
+                          'registeredAt': FieldValue.serverTimestamp(),
+                        });
                     // Call the callback to update registered status
                     widget.onPaymentComplete();
                     // Navigate to success screen
@@ -1997,28 +2050,18 @@ class RegistrationSuccessScreen extends StatelessWidget {
                 color: Colors.grey.shade200,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.check,
-                color: Colors.blue.shade500,
-                size: 40,
-              ),
+              child: Icon(Icons.check, color: Colors.blue.shade500, size: 40),
             ),
             const SizedBox(height: 16),
             const Text(
               'Event Registered',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'You can now track the\nstatus of your event',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -2034,21 +2077,23 @@ class RegistrationSuccessScreen extends StatelessWidget {
                 onPressed: () {
                   // Navigate to "Registered" tab (index 3)
                   Navigator.pushAndRemoveUntil(
-                    context, 
+                    context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        toggleTheme: () {},
-                        isDarkMode: false,
-                      ),
+                      builder:
+                          (context) =>
+                              HomeScreen(toggleTheme: () {}, isDarkMode: false),
                     ),
                     (route) => false,
                   ).then((_) {
                     // Use this technique to switch to the Registered tab
                     // Note: This is a workaround as we don't have direct tab control
                     // In a real app, you'd use a state management solution
-                    final homeState = context.findAncestorStateOfType<_HomeScreenState>();
+                    final homeState =
+                        context.findAncestorStateOfType<_HomeScreenState>();
                     if (homeState != null) {
-                      homeState._onItemTapped(3); // Switch to Registered tab (index 3)
+                      homeState._onItemTapped(
+                        3,
+                      ); // Switch to Registered tab (index 3)
                     }
                   });
                 },
@@ -2070,10 +2115,9 @@ class RegistrationSuccessScreen extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        toggleTheme: () {},
-                        isDarkMode: false,
-                      ),
+                      builder:
+                          (context) =>
+                              HomeScreen(toggleTheme: () {}, isDarkMode: false),
                     ),
                     (route) => false,
                   );
@@ -2083,7 +2127,7 @@ class RegistrationSuccessScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),  
-    ); 
+      ),
+    );
   }
 }

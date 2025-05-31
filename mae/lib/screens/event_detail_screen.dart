@@ -22,10 +22,7 @@ class EventDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          event.name,
-          style: const TextStyle(color: Colors.black),
-        ),
+        title: Text(event.name, style: const TextStyle(color: Colors.black)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
@@ -39,27 +36,28 @@ class EventDetailScreen extends StatelessWidget {
               height: 200,
               width: double.infinity,
               color: Colors.blue.shade400,
-              child: event.imageUrl.isNotEmpty
-                  ? Image.network(
-                      event.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        print('Failed to load image: $error');
-                        return Container(
-                          height: 200,
-                          width: double.infinity,
-                          color: Colors.grey.shade300,
-                          child: const Icon(Icons.error, size: 60, color: Colors.red),
-                        );
-                      },
-                    )
-                  : const Center(
-                      child: Icon(
-                        Icons.image,
-                        color: Colors.white,
-                        size: 40,
+              child:
+                  event.imageUrl.isNotEmpty
+                      ? Image.network(
+                        event.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('Failed to load image: $error');
+                          return Container(
+                            height: 200,
+                            width: double.infinity,
+                            color: Colors.grey.shade300,
+                            child: const Icon(
+                              Icons.error,
+                              size: 60,
+                              color: Colors.red,
+                            ),
+                          );
+                        },
+                      )
+                      : const Center(
+                        child: Icon(Icons.image, color: Colors.white, size: 40),
                       ),
-                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -119,10 +117,9 @@ class EventDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    formatEventDate(event.date) + (event.time.isNotEmpty ? ' at ${event.time}' : ''),
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
+                    formatEventDate(event.date) +
+                        (event.time.isNotEmpty ? ' at ${event.time}' : ''),
+                    style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   if (event.location.isNotEmpty) ...[
@@ -135,10 +132,7 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                     Text(
                       event.location,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -172,10 +166,7 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                     Text(
                       event.details ?? '',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -190,7 +181,10 @@ class EventDetailScreen extends StatelessWidget {
                     Text(
                       event.status,
                       style: TextStyle(
-                        color: event.status == 'APPROVED' ? Colors.green : Colors.orange,
+                        color:
+                            event.status == 'APPROVED'
+                                ? Colors.green
+                                : Colors.orange,
                         fontSize: 14,
                       ),
                     ),
@@ -206,22 +200,28 @@ class EventDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(50),
                         ),
                       ),
-                      onPressed: event.isRegistered
-                          ? null
-                          : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PaymentScreen(
-                                    event: event,
-                                    onPaymentComplete: () {
-                                      onRegister(event);
-                                    },
+                      onPressed:
+                          event.isRegistered
+                              ? null
+                              : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => PaymentScreen(
+                                          event: event,
+                                          onPaymentComplete: () {
+                                            onRegister(event);
+                                          },
+                                        ),
                                   ),
-                                ),
-                              );
-                            },
-                      child: Text(event.isRegistered ? 'Already Registered' : 'Apply Now!'),
+                                );
+                              },
+                      child: Text(
+                        event.isRegistered
+                            ? 'Already Registered'
+                            : 'Apply Now!',
+                      ),
                     ),
                   ),
                 ],

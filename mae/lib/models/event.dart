@@ -8,6 +8,7 @@ class Event {
   final String status;
   final String imageUrl;
   final String? details;
+  final String? rejectionReason;
   bool isRegistered;
 
   Event({
@@ -20,6 +21,7 @@ class Event {
     required this.status,
     this.imageUrl = '',
     this.details,
+    this.rejectionReason,
     this.isRegistered = false,
   });
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class EventListItem extends StatelessWidget {
+class EventListItemNA extends StatelessWidget {
   final String title;
   final String time;
   final String status;
 
-  const EventListItem({
+  const EventListItemNA({
     Key? key,
     required this.title,
     required this.time,
@@ -19,6 +19,7 @@ class EventListItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Event Title and Time
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -36,9 +37,14 @@ class EventListItem extends StatelessWidget {
               ),
             ],
           ),
+          // Event Status
           Text(
             status,
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
+            style: TextStyle(
+              color: status == 'APPROVED' ? Colors.green : Colors.orange,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

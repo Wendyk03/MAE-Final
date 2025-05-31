@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event.dart';
-import '../screens/create_event_screen.dart';
-import '../screens/event_detail_screen.dart';
+import '../screens/admin_event_detail_screen.dart';
 import '../utils/date_utils.dart';
 
 class EventsTab extends StatelessWidget {
@@ -26,29 +25,9 @@ class EventsTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade500,
-                  minimumSize: const Size(200, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CreateEventScreen(),
-                    ),
-                  );
-                },
-                child: const Text('Create Event'),
-              ),
-            ),
             const SizedBox(height: 24),
             const Text(
-              'UPCOMING EVENTS',
+              'Events Pending Approval',
               style: TextStyle(
                 color: Colors.grey,
                 fontSize: 12,
@@ -57,7 +36,11 @@ class EventsTab extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('events').orderBy('createdAt', descending: true).snapshots(),
+              stream:
+                  FirebaseFirestore.instance
+                      .collection('events')
+                      .orderBy('createdAt', descending: true)
+                      .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -66,26 +49,38 @@ class EventsTab extends StatelessWidget {
                   return const Center(child: Text('No events found.'));
                 }
 
-                final events = snapshot.data!.docs.map((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  return Event(
-                    name: data['name'] ?? '',
-                    organizer: data['organizer'] ?? '',
-                    date: data['date'] ?? '',
-                    time: data['time'] ?? '',
-                    location: data['location'] ?? '',
-                    fee: double.tryParse(data['fee'].toString()) ?? 0.0,
-                    status: data['status'] ?? '',
-                    imageUrl: data['imageUrl'] ?? '',
-                    details: data['details'],
-                  );
-                }).where((event) {
-                  if (event.status != 'APPROVED') return false;
-                  final eventDate = _parseDate(event.date);
-                  if (eventDate == null) return false;
-                  final eventDay = DateTime(eventDate.year, eventDate.month, eventDate.day);
-                  return eventDay.compareTo(today) >= 0;
-                }).toList();
+                final events =
+                    snapshot.data!.docs
+                        .map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return Event(
+                            name: data['name'] ?? '',
+                            organizer: data['organizer'] ?? '',
+                            date: data['date'] ?? '',
+                            time: data['time'] ?? '',
+                            location: data['location'] ?? '',
+                            fee: double.tryParse(data['fee'].toString()) ?? 0.0,
+                            status: data['status'] ?? '',
+                            imageUrl: data['imageUrl'] ?? '',
+                            details: data['details'],
+                          );
+                        })
+                        .where((event) {
+                          // Show events whose status is NOT "APPROVED" or "END"
+                          if (event.status == 'APPROVED' ||
+                              event.status == 'REJECTED' ||
+                              event.status == 'END')
+                            return false;
+                          final eventDate = _parseDate(event.date);
+                          if (eventDate == null) return false;
+                          final eventDay = DateTime(
+                            eventDate.year,
+                            eventDate.month,
+                            eventDate.day,
+                          );
+                          return eventDay.compareTo(today) >= 0;
+                        })
+                        .toList();
 
                 if (events.isEmpty) {
                   return const Center(
@@ -107,10 +102,11 @@ class EventsTab extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EventDetailScreen(
-                              event: event,
-                              onRegister: (_) {},
-                            ),
+                            builder:
+                                (context) => AdminEventDetailScreen(
+                                  event: event,
+                                  onRegister: (_) {},
+                                ),
                           ),
                         );
                       },
@@ -128,28 +124,41 @@ class EventsTab extends StatelessWidget {
                                 topLeft: Radius.circular(12),
                                 topRight: Radius.circular(12),
                               ),
-                              child: event.imageUrl.isNotEmpty
-                                  ? Image.network(
-                                      event.imageUrl,
-                                      height: 160,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        print('Failed to load image: $error');
-                                        return Container(
-                                          height: 160,
-                                          width: double.infinity,
-                                          color: Colors.grey.shade300,
-                                          child: const Icon(Icons.error, size: 60, color: Colors.red),
-                                        );
-                                      },
-                                    )
-                                  : Container(
-                                      height: 160,
-                                      width: double.infinity,
-                                      color: Colors.grey.shade300,
-                                      child: const Icon(Icons.image, size: 60, color: Colors.white),
-                                    ),
+                              child:
+                                  event.imageUrl.isNotEmpty
+                                      ? Image.network(
+                                        event.imageUrl,
+                                        height: 160,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          print('Failed to load image: $error');
+                                          return Container(
+                                            height: 160,
+                                            width: double.infinity,
+                                            color: Colors.grey.shade300,
+                                            child: const Icon(
+                                              Icons.error,
+                                              size: 60,
+                                              color: Colors.red,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                      : Container(
+                                        height: 160,
+                                        width: double.infinity,
+                                        color: Colors.grey.shade300,
+                                        child: const Icon(
+                                          Icons.image,
+                                          size: 60,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(16.0),

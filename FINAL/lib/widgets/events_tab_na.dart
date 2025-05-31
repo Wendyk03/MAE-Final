@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../screens/create_event_screen.dart';
+import '../screens/create_event_screen_na.dart';
 
-class EventsTab extends StatelessWidget {
-  const EventsTab({Key? key}) : super(key: key);
+class EventsTabNA extends StatelessWidget {
+  const EventsTabNA({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,15 +29,20 @@ class EventsTab extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Create Event'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 backgroundColor: Colors.deepPurple,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
+                    builder: (context) => const CreateEventScreenNA(),
                   ),
                 );
               },

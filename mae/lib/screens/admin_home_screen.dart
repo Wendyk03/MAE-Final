@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import '../widgets/events_tab.dart';
-import '../widgets/my_events_tab.dart';
-import '../widgets/event_registered_tab.dart';
+import '../widgets/admin_events_tab.dart';
+import '../widgets/admin_notification_tab.dart';
+import '../widgets/admin_event_in_progress_tab.dart';
+import '../widgets/admin_events_finished_tab.dart';
 import 'profile_screen.dart';
-import 'admin_home_screen.dart';
-import 'home_screen_na.dart';
 
-class HomeScreen extends StatefulWidget {
+class AdminHomeScreen extends StatefulWidget {
   final Function toggleTheme;
   final bool isDarkMode;
   final int initialTabIndex;
 
-  const HomeScreen({
+  const AdminHomeScreen({
     Key? key,
     required this.toggleTheme,
     required this.isDarkMode,
@@ -19,16 +18,17 @@ class HomeScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _AdminHomeScreenState extends State<AdminHomeScreen> {
   late int _selectedIndex;
 
   final List<Widget> _screens = [
     const EventsTab(),
-    const MyEventsTab(),
-    const RegisteredEventsTab(),
+    const AdminEventInProgressTab(),
+    const AdminEventsFinishedTab(),
+    const AdminNotificationTab(),
   ];
 
   @override
@@ -54,12 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               height: 40,
               width: 40,
-              color: Colors.blue.shade200,
+              color: Colors.red.shade200,
               child: Center(
                 child: Text(
-                  'APU',
+                  'ADMIN',
                   style: TextStyle(
-                    color: Colors.blue.shade800,
+                    color: Colors.red.shade800,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 8),
             const Text(
-              'A·P·U',
+              'Admin Panel',
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
@@ -100,18 +100,25 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark),
-            label: 'My Events',
+            icon: Icon(Icons.event),
+            label: 'Pending Events',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.how_to_reg),
-            label: 'Registered',
+            icon: Icon(Icons.timelapse),
+            label: 'Event In Progress',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.timelapse),
+            label: 'Event Completed',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notification',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue.shade600,
+        selectedItemColor: Colors.red.shade600,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
       ),

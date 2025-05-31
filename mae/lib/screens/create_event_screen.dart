@@ -7,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'registration_success_screen.dart';
 
-
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({Key? key}) : super(key: key);
 
@@ -34,7 +33,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   String? _submitError;
 
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedFile != null) {
       if (kIsWeb) {
         final bytes = await pickedFile.readAsBytes();
@@ -53,7 +54,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     if (_imageFile == null && _webImageBytes == null) return null;
     try {
       final storageRef = FirebaseStorage.instance.ref();
-      final fileName = 'event_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'event_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final ref = storageRef.child(fileName);
       UploadTask uploadTask;
       if (kIsWeb && _webImageBytes != null) {
@@ -63,9 +65,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       } else {
         return null;
       }
-      final snapshot = await uploadTask.timeout(const Duration(seconds: 30), onTimeout: () {
-        throw Exception('Image upload timed out.');
-      });
+      final snapshot = await uploadTask.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Image upload timed out.');
+        },
+      );
       final url = await snapshot.ref.getDownloadURL();
       return url;
     } catch (e) {
@@ -103,7 +108,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       } else {
         imageUrl = '';
       }
-      await FirebaseFirestore.instance.collection('events').add({
+      // Add event to Firestore and get the generated document ID
+      final docRef = await FirebaseFirestore.instance.collection('events').add({
         'name': _eventNameController.text,
         'location': _locationController.text,
         'date': _dateController.text,
@@ -113,8 +119,23 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         'website': _websiteController.text,
         'details': _detailsController.text,
         'status': 'PENDING',
+        'applicant': 0,
+        'fee_collected': 0,
         'createdAt': FieldValue.serverTimestamp(),
         'imageUrl': imageUrl,
+        'id': '', // placeholder, will update below
+      });
+      // Update the event with its unique id
+      await docRef.update({'id': docRef.id});
+      // Add notification to 'notification' collection
+      await FirebaseFirestore.instance.collection('notification').add({
+        'title': 'New Event Pending Approval',
+        'subtitle':
+            'Event "${_eventNameController.text}" requires admin approval.',
+        'eventName': _eventNameController.text,
+        'status': 'PENDING',
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
       });
       setState(() {
         _isSubmitting = false;
@@ -156,13 +177,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               height: 200,
               width: double.infinity,
               color: Colors.blue.shade400,
-              child: kIsWeb
-                  ? (_webImageBytes != null
-                      ? Image.memory(_webImageBytes!, fit: BoxFit.cover)
-                      : _buildUploadPlaceholder())
-                  : (_imageFile != null
-                      ? Image.file(_imageFile!, fit: BoxFit.cover)
-                      : _buildUploadPlaceholder()),
+              child:
+                  kIsWeb
+                      ? (_webImageBytes != null
+                          ? Image.memory(_webImageBytes!, fit: BoxFit.cover)
+                          : _buildUploadPlaceholder())
+                      : (_imageFile != null
+                          ? Image.file(_imageFile!, fit: BoxFit.cover)
+                          : _buildUploadPlaceholder()),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -186,9 +208,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Event Name',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -197,9 +217,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Event Name*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -211,9 +238,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Location',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -222,9 +247,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Location*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -236,9 +268,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Date',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -263,9 +293,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: 'Date*',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                 ),
-                                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                                validator:
+                                    (value) =>
+                                        value == null || value.isEmpty
+                                            ? 'Required'
+                                            : null,
                               ),
                             ),
                           ),
@@ -279,9 +316,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Time',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -303,9 +338,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: 'Time*',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                 ),
-                                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                                validator:
+                                    (value) =>
+                                        value == null || value.isEmpty
+                                            ? 'Required'
+                                            : null,
                               ),
                             ),
                           ),
@@ -319,9 +361,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Fee Charges',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -331,9 +371,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Fee Charges*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -345,9 +392,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Organized by',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -356,9 +401,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Organizer*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -370,9 +422,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'External Website',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -381,7 +431,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'External Website',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                           ),
                         ),
@@ -394,9 +447,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           width: 100,
                           child: Text(
                             'Details',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Expanded(
@@ -406,9 +457,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'Details*',
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Required'
+                                        : null,
                           ),
                         ),
                       ],
@@ -425,13 +483,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                           ),
                           onPressed: _isSubmitting ? null : _submitEvent,
-                          child: _isSubmitting
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text('Submit'),
+                          child:
+                              _isSubmitting
+                                  ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text('Submit'),
                         ),
                       ),
                     ),
@@ -457,21 +518,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(
-          Icons.image,
-          color: Colors.white,
-          size: 40,
-        ),
+        const Icon(Icons.image, color: Colors.white, size: 40),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               'Upload Event Poster',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(width: 16),
             ElevatedButton(

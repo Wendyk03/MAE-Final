@@ -9,8 +9,8 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mae"
-    compileSdk = flutter.compileSdkVersion
+    namespace = "com.github.rushio.flutterimagecompress"
+    compileSdk = 33
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -27,7 +27,7 @@ android {
         applicationId = "com.example.mae"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -44,4 +44,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("androidx.annotation:annotation:1.2.0")
 }

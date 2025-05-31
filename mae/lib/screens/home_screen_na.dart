@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../widgets/events_tab.dart';
+import '../widgets/events_tab_na.dart';
 import '../widgets/my_events_tab.dart';
 import 'profile_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreenNA extends StatefulWidget {
   final Function toggleTheme;
   final bool isDarkMode;
   final int initialTabIndex;
 
-  const HomeScreen({
+  const HomeScreenNA({
     Key? key,
     required this.toggleTheme,
     required this.isDarkMode,
@@ -16,10 +16,10 @@ class HomeScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreenNA> createState() => _HomeScreenNAState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenNAState extends State<HomeScreenNA> {
   late int _selectedIndex;
 
   late final List<Widget> _screens;
@@ -28,10 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialTabIndex; // Use the passed tab index
-    _screens = [
-      const EventsTab(),
-      const MyEventsTab(),
-    ];
+    _screens = [const EventsTabNA(), const MyEventsTab()];
   }
 
   void _onItemTapped(int index) {
@@ -45,12 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('APU Event App'),
-        
+
         actions: [
           IconButton(
-            icon: Icon(
-              widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-            ),
+            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
             onPressed: () {
               widget.toggleTheme();
             },
@@ -60,9 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
             },
           ),
@@ -71,10 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Events',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bookmark),
             label: 'My Events',

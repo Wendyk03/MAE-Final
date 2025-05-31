@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'home_screen_na.dart';
 
-class RegistrationSuccessScreen extends StatelessWidget {
-  const RegistrationSuccessScreen({Key? key}) : super(key: key);
+class RegistrationSuccessScreenNA extends StatelessWidget {
+  const RegistrationSuccessScreenNA({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,28 +27,18 @@ class RegistrationSuccessScreen extends StatelessWidget {
                 color: Colors.grey.shade200,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.check,
-                color: Colors.blue.shade500,
-                size: 40,
-              ),
+              child: Icon(Icons.check, color: Colors.blue.shade500, size: 40),
             ),
             const SizedBox(height: 16),
             const Text(
               'Event Registered',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'You can now track the\nstatus of your event',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -65,11 +55,12 @@ class RegistrationSuccessScreen extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        toggleTheme: () {},
-                        isDarkMode: false,
-                        initialTabIndex: 1, // Registered tab index
-                      ),
+                      builder:
+                          (context) => HomeScreenNA(
+                            toggleTheme: () {},
+                            isDarkMode: false,
+                            initialTabIndex: 1, // Registered tab index
+                          ),
                     ),
                     (route) => false,
                   );
@@ -92,10 +83,11 @@ class RegistrationSuccessScreen extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        toggleTheme: () {},
-                        isDarkMode: false,
-                      ),
+                      builder:
+                          (context) => HomeScreenNA(
+                            toggleTheme: () {},
+                            isDarkMode: false,
+                          ),
                     ),
                     (route) => false,
                   );

@@ -1,3 +1,5 @@
+apply plugin: 'com.android.library'
+
 allprojects {
     repositories {
         google()
@@ -5,17 +7,18 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
-rootProject.layout.buildDirectory.value(newBuildDir)
+// These lines are INVALID in Groovy and should be removed
+// val newBuildDir... (Kotlin only)
 
-subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
-}
-subprojects {
-    project.evaluationDependsOn(":app")
+android {
+    namespace 'com.github.rushio.flutterimagecompress'  // ✅ Required for AGP 8+
+    compileSdkVersion 33
+
+    defaultConfig {
+        minSdkVersion 21
+    }
 }
 
-tasks.register<Delete>("clean") {
-    delete(rootProject.layout.buildDirectory)
+dependencies {
+    implementation 'androidx.annotation:annotation:1.2.0'
 }
